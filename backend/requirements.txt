@@ -1,0 +1,31 @@
+# Core Flask dependencies
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-CORS==4.0.0
+
+# Strands Agents (AI research)
+strands-agents==0.1.0
+strands-agents-tools==0.1.0
+
+# Web scraping and parsing
+beautifulsoup4==4.12.2
+requests==2.31.0
+lxml==4.9.3
+
+# Data processing
+pandas==2.1.0
+numpy==1.24.3
+
+# Configuration and utilities
+python-dotenv==1.0.0
+click==8.1.7
+schedule==1.2.0
+psutil==5.9.5
+
+# Development and testing
+pytest==7.4.0
+pytest-flask==1.2.1
+python-dateutil==2.8.2
+
+# Production server
+gunicorn==21.2.0
