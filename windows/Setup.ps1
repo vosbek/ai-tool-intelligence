@@ -182,14 +182,30 @@ python -m pip install --upgrade pip
 # Install Python dependencies
 Write-Info "Installing Python dependencies (this may take a few minutes)..."
 try {
+    # First upgrade pip and install basic build tools
+    python -m pip install --upgrade pip setuptools wheel
+    
+    # Install AWS SDK first (required for Strands Agents)
+    pip install boto3 botocore
+    
+    # Install Strands Agents separately with better error handling
+    Write-Info "Installing Strands Agents SDK..."
+    pip install strands-agents strands-agents-tools
+    
+    # Install remaining dependencies
     pip install -r requirements.txt
+    
     if ($LASTEXITCODE -ne 0) {
         throw "pip install failed"
     }
     Write-Success "Python dependencies installed successfully"
 } catch {
     Write-Error "Failed to install Python dependencies: $_"
-    Write-Info "You may need to run: pip install --upgrade pip setuptools wheel"
+    Write-Info "Common solutions:"
+    Write-Info "1. Ensure AWS credentials are available"
+    Write-Info "2. Try: pip install --upgrade pip setuptools wheel"
+    Write-Info "3. Check internet connection"
+    Write-Info "4. Some packages may require Visual C++ Build Tools on Windows"
     exit 1
 }
 
@@ -204,7 +220,22 @@ if (-not (Test-Path ".env")) {
 Write-Info "Testing Python dependencies..."
 try {
     python -c "from flask import Flask; from flask_sqlalchemy import SQLAlchemy; print('✅ Flask dependencies OK')"
-    python -c "try:`n  from strands import Agent`n  print('✅ Strands Agents available')`nexcept ImportError:`n  print('⚠️  Strands Agents not available - research features will be limited')"
+    
+    # Test Strands Agents with better error reporting
+    $StrandsTest = python -c "try:
+    from strands import Agent
+    from strands.models import BedrockModel
+    print('✅ Strands Agents core available')
+    try:
+        from strands_tools import calculator
+        print('✅ Strands Agents tools available')
+    except ImportError as e:
+        print('⚠️  Strands tools partially available:', str(e))
+except ImportError as e:
+    print('❌ Strands Agents not available:', str(e))"
+    
+    Write-Info $StrandsTest
+    
 } catch {
     Write-Warning "Some dependencies may have issues, but basic functionality should work"
 }

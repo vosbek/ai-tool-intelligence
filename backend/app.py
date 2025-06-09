@@ -166,7 +166,17 @@ class StrandsAgentService:
             # Import Strands Agents and all our custom tools
             from strands import Agent
             from strands.models import BedrockModel
-            from strands_tools import http_request, python
+            # Import available tools - try different import patterns
+            try:
+                from strands_tools import http_request, python_repl
+                available_tools = [http_request, python_repl]
+            except ImportError:
+                try:
+                    from strands.tools import http_request, python_repl
+                    available_tools = [http_request, python_repl]
+                except ImportError:
+                    # Fallback to basic tools if specific ones aren't available
+                    available_tools = []
             
             # Configure Bedrock model (or use any other provider)
             model = BedrockModel(
@@ -178,7 +188,7 @@ class StrandsAgentService:
             # Create agent with basic research tools (custom tools will be imported later)
             self.agent = Agent(
                 model=model,
-                tools=[http_request, python],
+                tools=available_tools,
                 system_prompt="""You are a comprehensive AI tool research specialist.
                 
 When researching a tool, you should:
@@ -225,7 +235,7 @@ Always be thorough and cite sources when possible. If information is not availab
         Primary sources to investigate:
         {chr(10).join(f"- {url}" for url in urls)}
         
-        Use the http_request tool to fetch content from these URLs and gather comprehensive information.
+        Use available tools to fetch content from these URLs and gather comprehensive information.
         
         Please research and provide:
         
