@@ -7,7 +7,15 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 import os
 import json
+import sys
 from typing import Dict, List, Optional
+
+# Import our AWS credential validator
+try:
+    from aws_credential_validator import AWSCredentialValidator
+except ImportError:
+    print("Warning: AWS credential validator not available")
+    AWSCredentialValidator = None
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///ai_tools.db')
@@ -180,7 +188,7 @@ class StrandsAgentService:
             
             # Configure Bedrock model (or use any other provider)
             model = BedrockModel(
-                model_id="us.anthropic.claude-3-7-sonnet-20241109-v1:0",
+                model_id="us.anthropic.claude-3-5-sonnet-20241022-v2:0",
                 temperature=0.1,
                 streaming=False
             )
@@ -559,6 +567,40 @@ def integration_to_dict(integration):
         'integration_url': integration.integration_url
     }
 
+def validate_aws_setup():
+    """Validate AWS credentials and setup before starting the application"""
+    print("\n🔍 Validating AWS setup...")
+    
+    if not AWSCredentialValidator:
+        print("⚠️  AWS credential validator not available. Skipping validation.")
+        return True
+    
+    validator = AWSCredentialValidator(region=os.getenv('AWS_REGION', 'us-east-1'))
+    results = validator.validate_credentials()
+    
+    if not results["credentials_valid"]:
+        print("❌ AWS credentials validation failed!")
+        print("\n🛠️  Please fix AWS credentials before starting the application.")
+        print("💡 Run: python aws_credential_validator.py for detailed diagnostics")
+        print("📖 See AWS_SETUP.md for complete setup instructions")
+        return False
+        
+    if not results["bedrock_access"]:
+        print("❌ Bedrock access validation failed!")
+        print("💡 Ensure Bedrock is enabled in your AWS account")
+        return False
+        
+    if not results["claude_model_available"]:
+        print("❌ Claude 3.5 Sonnet not available!")
+        print("💡 Enable Claude 3.5 Sonnet in AWS Bedrock Console (us-east-1)")
+        return False
+    
+    print(f"✅ AWS credentials validated ({results['credential_source']})")
+    print(f"✅ Bedrock access confirmed in {results['region']}")
+    print(f"✅ Claude 3.5 Sonnet available")
+    print("🎉 AWS setup validation complete!")
+    return True
+
 def update_tool_from_research(tool, research_data):
     """Update tool with data from research"""
     if 'tool' in research_data:
@@ -650,6 +692,18 @@ def update_tool_from_research(tool, research_data):
                 tool.starting_price = min(tier['price_monthly'] for tier in paid_tiers)
 
 if __name__ == '__main__':
+    # Validate AWS setup before starting
+    print("🚀 Starting AI Tool Intelligence Platform")
+    
+    # Skip AWS validation in development mode if SKIP_AWS_VALIDATION is set
+    if not os.getenv('SKIP_AWS_VALIDATION'):
+        if not validate_aws_setup():
+            print("\n❌ AWS validation failed. Application cannot start.")
+            print("💡 To skip AWS validation for development, set: SKIP_AWS_VALIDATION=1")
+            sys.exit(1)
+    else:
+        print("⚠️  Skipping AWS validation (SKIP_AWS_VALIDATION=1)")
+    
     # Initialize database
     with app.app_context():
         db.create_all()

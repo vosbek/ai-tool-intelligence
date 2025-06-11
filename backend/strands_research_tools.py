@@ -1,6 +1,5 @@
 # strands_research_tools.py - Complete toolkit for AI tool research
 
-from strands import tool
 import requests
 import json
 import re
@@ -15,7 +14,6 @@ import hashlib
 # CORE RESEARCH TOOLS
 # =============================================================================
 
-@tool
 def github_analyzer(repo_url: str) -> Dict:
     """
     Analyze GitHub repository for comprehensive metrics including:
@@ -135,7 +133,6 @@ def github_analyzer(repo_url: str) -> Dict:
     except Exception as e:
         return {"error": f"GitHub analysis failed: {str(e)}"}
 
-@tool
 def pricing_extractor(website_url: str) -> Dict:
     """
     Extract comprehensive pricing information from tool websites including:
@@ -251,7 +248,6 @@ def pricing_extractor(website_url: str) -> Dict:
     except Exception as e:
         return {"error": f"Pricing extraction failed: {str(e)}"}
 
-@tool
 def company_lookup(company_name: str, website_url: str = None) -> Dict:
     """
     Research comprehensive company information from multiple sources:
@@ -366,7 +362,6 @@ def company_lookup(company_name: str, website_url: str = None) -> Dict:
         return {"error": f"Company lookup failed: {str(e)}"}
 
 # Additional simplified tools for MVP
-@tool  
 def feature_extractor(website_url: str, docs_url: str = None) -> Dict:
     """Extract and categorize tool features"""
     try:
@@ -433,7 +428,6 @@ def feature_extractor(website_url: str, docs_url: str = None) -> Dict:
     except Exception as e:
         return {"error": f"Feature extraction failed: {str(e)}"}
 
-@tool
 def integration_detector(website_url: str, docs_url: str = None) -> Dict:
     """Detect tool integrations and ecosystem connections"""
     try:
@@ -498,32 +492,72 @@ def get_all_research_tools():
         integration_detector
     ]
 
+def create_strands_tools():
+    """Create Strands tools using the official SDK pattern"""
+    try:
+        from strands_tools import tool
+        
+        # Define tools using the official SDK decorator pattern
+        @tool
+        def github_analyzer_tool(repo_url: str) -> Dict:
+            """Analyze GitHub repository metrics and activity"""
+            return github_analyzer(repo_url)
+        
+        @tool  
+        def pricing_extractor_tool(website_url: str) -> Dict:
+            """Extract pricing information from tool websites"""
+            return pricing_extractor(website_url)
+        
+        @tool
+        def company_lookup_tool(company_name: str, website_url: str = None) -> Dict:
+            """Research company background and information"""
+            return company_lookup(company_name, website_url)
+        
+        @tool
+        def feature_extractor_tool(website_url: str, docs_url: str = None) -> Dict:
+            """Extract and categorize tool features"""
+            return feature_extractor(website_url, docs_url)
+        
+        @tool
+        def integration_detector_tool(website_url: str, docs_url: str = None) -> Dict:
+            """Detect tool integrations and ecosystem connections"""
+            return integration_detector(website_url, docs_url)
+        
+        return [
+            github_analyzer_tool,
+            pricing_extractor_tool,
+            company_lookup_tool,
+            feature_extractor_tool,
+            integration_detector_tool
+        ]
+    except ImportError:
+        # Fallback for environments without strands_tools
+        return []
+
 def create_comprehensive_research_agent():
-    """Create a Strands Agent with all research tools"""
-    from strands import Agent
-    from strands.models import BedrockModel
-    from strands_tools import http_request, python
-    
-    model = BedrockModel(
-        model_id="us.anthropic.claude-3-7-sonnet-20241109-v1:0",
-        temperature=0.1
-    )
-    
-    all_tools = [http_request, python] + get_all_research_tools()
-    
-    agent = Agent(
-        model=model,
-        tools=all_tools,
-        system_prompt="""You are a comprehensive AI tool research specialist with access to specialized research tools.
+    """Create a Strands Agent with all research tools using official SDK"""
+    try:
+        from strands import Agent
         
-        When researching a tool, systematically use the available tools:
-        1. github_analyzer - for repository metrics and activity (if GitHub URL available)
-        2. pricing_extractor - for pricing and subscription information  
-        3. company_lookup - for company background and team info
-        4. feature_extractor - for comprehensive feature analysis
-        5. integration_detector - for ecosystem and integration analysis
+        # Get research tools
+        research_tools = create_strands_tools()
         
-        Always provide structured, comprehensive reports with confidence scores and cite sources when possible."""
-    )
-    
-    return agent
+        # Create agent with Bedrock configuration
+        agent = Agent(
+            tools=research_tools,
+            system_prompt="""You are a comprehensive AI tool research specialist with access to specialized research tools.
+            
+            When researching a tool, systematically use the available tools:
+            1. github_analyzer_tool - for repository metrics and activity (if GitHub URL available)
+            2. pricing_extractor_tool - for pricing and subscription information  
+            3. company_lookup_tool - for company background and team info
+            4. feature_extractor_tool - for comprehensive feature analysis
+            5. integration_detector_tool - for ecosystem and integration analysis
+            
+            Always provide structured, comprehensive reports with confidence scores and cite sources when possible."""
+        )
+        
+        return agent
+    except ImportError as e:
+        print(f"Warning: Could not create Strands agent - {e}")
+        return None

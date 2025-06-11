@@ -15,9 +15,12 @@ Automatically research AI developer tools, extract pricing information, analyze 
 
 ### Prerequisites
 
-- **Python 3.9+** and **Node.js 18+**
+- **Python 3.10+** and **Node.js 18+** (Required for Strands SDK compatibility)
 - **AWS Account** with Bedrock access
-- **Claude 3.7 Sonnet** enabled in AWS Bedrock (us-west-2 region)
+- **Claude 3.5 Sonnet** enabled in AWS Bedrock (us-east-1 region)
+
+### Windows Users
+For Windows-specific installation instructions, see [WINDOWS_SETUP.md](WINDOWS_SETUP.md)
 
 ### Step 1: Clone and Setup
 
@@ -39,7 +42,7 @@ cp backend/.env.example backend/.env
 nano backend/.env
 
 # Add your AWS credentials:
-AWS_REGION=us-west-2
+AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your-access-key-here
 AWS_SECRET_ACCESS_KEY=your-secret-key-here
 ```
@@ -47,8 +50,10 @@ AWS_SECRET_ACCESS_KEY=your-secret-key-here
 ### Step 3: Enable AWS Bedrock Access
 
 1. Go to **AWS Bedrock Console** → **Model access**
-2. **Request access** for **Claude 3.7 Sonnet** in **us-west-2** region
+2. **Request access** for **Claude 3.5 Sonnet** in **us-east-1** region
 3. Wait for approval (usually instant)
+
+**Note:** Ensure you have Python 3.10+ installed for Strands SDK compatibility
 
 ### Step 4: Start the Platform
 
@@ -63,9 +68,10 @@ AWS_SECRET_ACCESS_KEY=your-secret-key-here
 
 ### Step 5: Add Your First Tool
 
-1. Open http://localhost:3000
+1. Open <http://localhost:3000>
 2. Click **"Add New Tool"**
 3. Enter tool information:
+
    ```
    Name: Cursor
    Category: Agentic IDEs
@@ -73,16 +79,44 @@ AWS_SECRET_ACCESS_KEY=your-secret-key-here
    GitHub: https://github.com/getcursor/cursor
    Documentation: https://docs.cursor.sh
    ```
+
 4. Click **"Research"** to trigger automated analysis
 5. Wait 2-3 minutes for comprehensive results
 
 ## 📊 What You Get
+
+### Enhanced User Experience Features
+
+**🔄 Real-time Progress Indicators**
+- Visual progress bars during research operations
+- Estimated time remaining for long-running tasks  
+- Global progress tracking for bulk operations
+- Live status updates in the research queue
+
+**🔔 Smart Notifications**
+- Browser notifications when research completes
+- In-app notifications for all operations
+- Auto-clearing notifications with manual dismiss
+- Success/error status indicators
+
+**⚡ Bulk Operations & Research Queue**
+- Select multiple tools for batch research
+- Visual research queue with status tracking
+- Bulk selection with "select all" functionality
+- Queue management with clear completed items
+
+**⌨️ Enhanced Interface**
+- Responsive design for all screen sizes
+- Real-time status updates without page refresh
+- Keyboard shortcuts for power users
+- Improved table with bulk selection checkboxes
 
 ### Automated Research Results
 
 Each tool gets analyzed across **13 specialized dimensions**:
 
 **📈 Repository Analysis**
+
 - GitHub stars, forks, contributors, activity patterns
 - Release frequency and version tracking
 - Technology stack and programming languages
@@ -109,6 +143,40 @@ Each tool gets analyzed across **13 specialized dimensions**:
 - **Technology adoption** patterns
 - **Pricing strategy** analysis
 
+## 🚀 New Features Usage Guide
+
+### Bulk Research Operations
+```
+1. Check the boxes next to tools you want to research
+2. Use "Select All" checkbox in the table header for all visible tools
+3. Click "Research Selected (X)" button to start batch processing
+4. Monitor progress in the top progress bar and research queue
+```
+
+### Real-time Notifications
+```
+- Enable browser notifications when prompted for completion alerts
+- Watch in-app notifications (top-right) for operation status
+- Research queue (bottom-right) shows live progress
+- Progress bars show estimated completion times
+```
+
+### Research Queue Management
+```
+- View active/completed/failed research in the bottom-right queue
+- Click "Clear" to remove completed items
+- Monitor individual tool progress in real-time
+- Get browser notifications when research completes
+```
+
+### Keyboard Shortcuts
+```
+- R: Research selected tool (when viewing tool details)
+- E: Edit selected tool (when viewing tool details)
+- Esc: Close current modal/view
+- Ctrl+A: Select all visible tools (when table is focused)
+```
+
 ## 🛠️ Architecture
 
 ```
@@ -116,7 +184,7 @@ Each tool gets analyzed across **13 specialized dimensions**:
 │   React Frontend│────│   Flask Backend  │────│   AWS Strands Agent │
 │                 │    │                  │    │                     │
 │ • Tool Dashboard│    │ • SQLite DB      │    │ • 13 Research Tools │
-│ • Analytics     │    │ • REST API       │    │ • Claude 3.7 Sonnet │
+│ • Analytics     │    │ • REST API       │    │ • Claude 3.5 Sonnet │
 │ • Search/Filter │    │ • Research Queue │    │ • Web Scraping     │
 └─────────────────┘    └──────────────────┘    └─────────────────────┘
 ```
@@ -231,7 +299,7 @@ When you research "Cursor", you get comprehensive data like:
 {
   "strands_agent": {
     "model_provider": "bedrock",
-    "model_id": "us.anthropic.claude-3-7-sonnet-20241109-v1:0",
+    "model_id": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
     "temperature": 0.1,
     "rate_limit_delay": 5
   },
@@ -332,22 +400,50 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ### Common Issues
 
 **AWS Bedrock Access Denied**
+
 ```bash
 # Check model access in AWS console
-aws bedrock list-foundation-models --region us-west-2 | grep claude
+aws bedrock list-foundation-models --region us-east-1 | grep claude
 ```
 
 **Strands Agents Installation Failed**
+
 ```bash
+# Ensure Python 3.10+ is installed
+python --version
+
 # Install with specific version
-pip install strands-agents==0.1.0 --force-reinstall
+pip install strands-agents>=0.1.0 strands-agents-tools>=0.1.0 --force-reinstall
+
+# For Windows users, see WINDOWS_SETUP.md for detailed troubleshooting
 ```
 
 **Research Takes Too Long**
+
 ```bash
-# Reduce concurrent processing
+# Use bulk research with progress indicators for better experience
+# Select multiple tools and use "Research Selected" button
+# Monitor progress in real-time with the new progress indicators
+
+# Reduce concurrent processing if needed
 nano backend/config.json
 # Set "max_concurrent_tools": 1
+```
+
+**Browser Notifications Not Working**
+
+```bash
+# Check browser notification permissions
+# Click "Allow" when prompted during first research
+# Or manually enable in browser settings for your domain
+```
+
+**Research Queue Not Updating**
+
+```bash
+# Refresh the page if queue appears stuck
+# Clear completed items using "Clear" button
+# Check browser console for any JavaScript errors
 ```
 
 ### Getting Help

@@ -1,5 +1,5 @@
 // App.js - Main React application
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 // API service
@@ -38,6 +38,111 @@ class ApiService {
     return response.json();
   }
 }
+
+// Notification component
+const Notification = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 5000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+
+  return (
+    <div className={`fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 max-w-sm`}>
+      <div className="flex items-center justify-between">
+        <span className="text-sm">{message}</span>
+        <button onClick={onClose} className="ml-3 text-white hover:text-gray-200">
+          ✕
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Progress indicator component
+const ProgressIndicator = ({ isActive, progress = 0, message = "Processing...", estimatedTime = null }) => {
+  if (!isActive) return null;
+
+  return (
+    <div className="fixed top-0 left-0 w-full bg-blue-500 text-white px-4 py-2 z-40 shadow-lg">
+      <div className="flex items-center justify-between max-w-7xl mx-auto">
+        <div className="flex items-center space-x-3">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+          <span className="text-sm font-medium">{message}</span>
+          {estimatedTime && (
+            <span className="text-xs opacity-90">Est. {estimatedTime}</span>
+          )}
+        </div>
+        <div className="text-xs">{Math.round(progress)}%</div>
+      </div>
+      <div className="w-full bg-blue-600 rounded-full h-1 mt-2">
+        <div 
+          className="bg-white h-1 rounded-full transition-all duration-300" 
+          style={{ width: `${progress}%` }}
+        ></div>
+      </div>
+    </div>
+  );
+};
+
+// Research queue indicator
+const ResearchQueueIndicator = ({ queue, onClearQueue }) => {
+  if (queue.length === 0) return null;
+
+  const processing = queue.filter(item => item.status === 'processing').length;
+  const completed = queue.filter(item => item.status === 'completed').length;
+  const failed = queue.filter(item => item.status === 'failed').length;
+
+  return (
+    <div className="fixed bottom-4 right-4 bg-white border rounded-lg shadow-lg p-4 max-w-sm z-40">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-semibold">Research Queue</h3>
+        <button 
+          onClick={onClearQueue}
+          className="text-gray-400 hover:text-gray-600 text-xs"
+        >
+          Clear
+        </button>
+      </div>
+      <div className="space-y-1 text-xs">
+        <div className="flex justify-between">
+          <span>Processing:</span>
+          <span className="font-medium text-yellow-600">{processing}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Completed:</span>
+          <span className="font-medium text-green-600">{completed}</span>
+        </div>
+        {failed > 0 && (
+          <div className="flex justify-between">
+            <span>Failed:</span>
+            <span className="font-medium text-red-600">{failed}</span>
+          </div>
+        )}
+      </div>
+      <div className="mt-2">
+        {queue.slice(0, 3).map(item => (
+          <div key={item.id} className="flex items-center justify-between py-1">
+            <span className="text-xs truncate">{item.name}</span>
+            <span className={`text-xs px-1 rounded ${
+              item.status === 'processing' ? 'bg-yellow-100 text-yellow-700' :
+              item.status === 'completed' ? 'bg-green-100 text-green-700' :
+              'bg-red-100 text-red-700'
+            }`}>
+              {item.status}
+            </span>
+          </div>
+        ))}
+        {queue.length > 3 && (
+          <div className="text-xs text-gray-500 mt-1">
+            +{queue.length - 3} more...
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 // Tool status badge component
 const StatusBadge = ({ status }) => {
@@ -280,54 +385,96 @@ const ToolForm = ({ tool, categories, onSave, onCancel }) => {
 };
 
 // Tool detail view component
-const ToolDetail = ({ tool, onEdit, onResearch, onClose }) => {
+const ToolDetail = ({ tool, onEdit, onResearch, onClose, onShowNotification }) => {
   const [isResearching, setIsResearching] = useState(false);
   const [researchResult, setResearchResult] = useState(null);
+  const [researchProgress, setResearchProgress] = useState(0);
 
   const handleResearch = async () => {
     setIsResearching(true);
     setResearchResult(null);
+    setResearchProgress(0);
+    
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      await Notification.requestPermission();
+    }
+    
+    // Simulate progress updates
+    const progressInterval = setInterval(() => {
+      setResearchProgress(prev => {
+        if (prev >= 90) return prev;
+        return prev + Math.random() * 15;
+      });
+    }, 1000);
+    
     try {
       const result = await onResearch(tool.id);
+      setResearchProgress(100);
       setResearchResult(result);
+      
+      // Show browser notification
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification(`Research completed for ${tool.name}`, {
+          body: result.error ? 'Research failed' : 'Research completed successfully',
+          icon: '/favicon.ico'
+        });
+      }
+      
+      // Show in-app notification
+      onShowNotification(
+        result.error ? `Research failed for ${tool.name}` : `Research completed for ${tool.name}`,
+        result.error ? 'error' : 'success'
+      );
+      
     } catch (error) {
       setResearchResult({ error: error.message });
+      onShowNotification(`Research failed for ${tool.name}: ${error.message}`, 'error');
     } finally {
+      clearInterval(progressInterval);
       setIsResearching(false);
+      setResearchProgress(0);
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h2 className="text-3xl font-bold">{tool.name}</h2>
-          <div className="mt-2">
-            <StatusBadge status={tool.processing_status} />
+    <>
+      <ProgressIndicator 
+        isActive={isResearching} 
+        progress={researchProgress}
+        message={`Researching ${tool.name}...`}
+        estimatedTime="2-3 minutes"
+      />
+      <div className="max-w-6xl mx-auto bg-white p-6 rounded-lg shadow">
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h2 className="text-3xl font-bold">{tool.name}</h2>
+            <div className="mt-2">
+              <StatusBadge status={tool.processing_status} />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => onEdit(tool)}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+            >
+              Edit
+            </button>
+            <button
+              onClick={handleResearch}
+              disabled={isResearching}
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors disabled:opacity-50"
+            >
+              {isResearching ? `Researching... ${Math.round(researchProgress)}%` : 'Research'}
+            </button>
+            <button
+              onClick={onClose}
+              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors"
+            >
+              Close
+            </button>
           </div>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => onEdit(tool)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-          >
-            Edit
-          </button>
-          <button
-            onClick={handleResearch}
-            disabled={isResearching}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors disabled:opacity-50"
-          >
-            {isResearching ? 'Researching...' : 'Research'}
-          </button>
-          <button
-            onClick={onClose}
-            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors"
-          >
-            Close
-          </button>
-        </div>
-      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
@@ -427,7 +574,8 @@ const ToolDetail = ({ tool, onEdit, onResearch, onClose }) => {
           )}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 
@@ -445,6 +593,10 @@ const App = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [researchQueue, setResearchQueue] = useState([]);
+  const [globalProgress, setGlobalProgress] = useState({ isActive: false, progress: 0, message: '' });
+  const [selectedTools, setSelectedTools] = useState([]);
 
   useEffect(() => {
     loadInitialData();
@@ -467,6 +619,34 @@ const App = () => {
     }
   };
 
+  const showNotification = (message, type = 'info') => {
+    const id = Date.now();
+    setNotifications(prev => [...prev, { id, message, type }]);
+  };
+
+  const removeNotification = (id) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const addToResearchQueue = (tool) => {
+    setResearchQueue(prev => [...prev, {
+      id: tool.id,
+      name: tool.name,
+      status: 'processing',
+      startTime: Date.now()
+    }]);
+  };
+
+  const updateResearchQueue = (toolId, status) => {
+    setResearchQueue(prev => prev.map(item => 
+      item.id === toolId ? { ...item, status, endTime: Date.now() } : item
+    ));
+  };
+
+  const clearResearchQueue = () => {
+    setResearchQueue(prev => prev.filter(item => item.status === 'processing'));
+  };
+
   const handleSaveTool = async (toolData) => {
     try {
       if (editingTool) {
@@ -485,17 +665,57 @@ const App = () => {
   };
 
   const handleResearch = async (toolId) => {
+    const tool = tools.find(t => t.id === toolId);
+    if (!tool) return;
+
     try {
+      // Add to research queue
+      addToResearchQueue(tool);
+      showNotification(`Started research for ${tool.name}`, 'info');
+
       const result = await ApiService.post(`/tools/${toolId}/research`);
+      
       // Update the tool in the list
       setTools(prev => prev.map(t => 
         t.id === toolId ? { ...t, processing_status: result.tool?.processing_status || 'processing' } : t
       ));
+
+      // Update research queue
+      updateResearchQueue(toolId, result.error ? 'failed' : 'completed');
+      
       return result;
     } catch (error) {
       console.error('Error researching tool:', error);
+      updateResearchQueue(toolId, 'failed');
       throw error;
     }
+  };
+
+  const handleBulkResearch = async (toolIds) => {
+    setGlobalProgress({ isActive: true, progress: 0, message: `Researching ${toolIds.length} tools...` });
+    
+    let completed = 0;
+    const results = [];
+
+    for (const toolId of toolIds) {
+      try {
+        const result = await handleResearch(toolId);
+        results.push({ toolId, result });
+      } catch (error) {
+        results.push({ toolId, error: error.message });
+      }
+      
+      completed++;
+      setGlobalProgress(prev => ({ 
+        ...prev, 
+        progress: (completed / toolIds.length) * 100 
+      }));
+    }
+
+    setGlobalProgress({ isActive: false, progress: 0, message: '' });
+    showNotification(`Bulk research completed for ${toolIds.length} tools`, 'success');
+    
+    return results;
   };
 
   const filteredTools = tools.filter(tool => {
@@ -541,18 +761,38 @@ const App = () => {
 
   if (selectedTool) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
-        <ToolDetail
-          tool={selectedTool}
-          onEdit={(tool) => {
-            setEditingTool(tool);
-            setShowForm(true);
-            setSelectedTool(null);
-          }}
-          onResearch={handleResearch}
-          onClose={() => setSelectedTool(null)}
+      <>
+        <ProgressIndicator 
+          isActive={globalProgress.isActive}
+          progress={globalProgress.progress}
+          message={globalProgress.message}
         />
-      </div>
+        {notifications.map(notification => (
+          <Notification
+            key={notification.id}
+            message={notification.message}
+            type={notification.type}
+            onClose={() => removeNotification(notification.id)}
+          />
+        ))}
+        <ResearchQueueIndicator 
+          queue={researchQueue}
+          onClearQueue={clearResearchQueue}
+        />
+        <div className="min-h-screen bg-gray-50 p-4">
+          <ToolDetail
+            tool={selectedTool}
+            onEdit={(tool) => {
+              setEditingTool(tool);
+              setShowForm(true);
+              setSelectedTool(null);
+            }}
+            onResearch={handleResearch}
+            onClose={() => setSelectedTool(null)}
+            onShowNotification={showNotification}
+          />
+        </div>
+      </>
     );
   }
 
@@ -573,20 +813,57 @@ const App = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto">
+    <>
+      <ProgressIndicator 
+        isActive={globalProgress.isActive}
+        progress={globalProgress.progress}
+        message={globalProgress.message}
+      />
+      {notifications.map(notification => (
+        <Notification
+          key={notification.id}
+          message={notification.message}
+          type={notification.type}
+          onClose={() => removeNotification(notification.id)}
+        />
+      ))}
+      <ResearchQueueIndicator 
+        queue={researchQueue}
+        onClearQueue={clearResearchQueue}
+      />
+      <div className="min-h-screen bg-gray-50">
+        <div className="p-6">
+          <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">AI Tool Intelligence Platform</h1>
               <p className="text-gray-600 mt-1">Comprehensive research and analysis of AI developer tools</p>
             </div>
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-600 transition-colors font-medium"
-            >
-              Add New Tool
-            </button>
+            <div className="flex gap-2">
+              {selectedTools.length > 0 && (
+                <>
+                  <button
+                    onClick={() => handleBulkResearch(selectedTools)}
+                    disabled={globalProgress.isActive}
+                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors disabled:opacity-50"
+                  >
+                    Research Selected ({selectedTools.length})
+                  </button>
+                  <button
+                    onClick={() => setSelectedTools([])}
+                    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors"
+                  >
+                    Clear Selection
+                  </button>
+                </>
+              )}
+              <button
+                onClick={() => setShowForm(true)}
+                className="bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-600 transition-colors font-medium"
+              >
+                Add New Tool
+              </button>
+            </div>
           </div>
 
           {/* Summary Stats */}
@@ -673,6 +950,20 @@ const App = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <input
+                      type="checkbox"
+                      checked={selectedTools.length === filteredTools.length && filteredTools.length > 0}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedTools(filteredTools.map(t => t.id));
+                        } else {
+                          setSelectedTools([]);
+                        }
+                      }}
+                      className="rounded"
+                    />
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Tool
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -697,6 +988,20 @@ const App = () => {
                   const category = categories.find(c => c.id === tool.category_id);
                   return (
                     <tr key={tool.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <input
+                          type="checkbox"
+                          checked={selectedTools.includes(tool.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedTools(prev => [...prev, tool.id]);
+                            } else {
+                              setSelectedTools(prev => prev.filter(id => id !== tool.id));
+                            }
+                          }}
+                          className="rounded"
+                        />
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">{tool.name}</div>
@@ -773,7 +1078,7 @@ const App = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

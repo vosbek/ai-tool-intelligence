@@ -273,7 +273,7 @@ Write-Host ""
 Write-Host "📖 Next steps:" -ForegroundColor Cyan
 if (-not $FrontendOnly) {
     Write-Host "1. Configure AWS credentials in backend\.env" -ForegroundColor White
-    Write-Host "2. Enable Claude 3.7 Sonnet access in AWS Bedrock console" -ForegroundColor White
+    Write-Host "2. Enable Claude 3.5 Sonnet access in AWS Bedrock console" -ForegroundColor White
 }
 if (-not $BackendOnly) {
     Write-Host "3. Open http://localhost:$FrontendPort to start adding tools" -ForegroundColor White

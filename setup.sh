@@ -162,7 +162,7 @@ cat > config.json << 'EOF'
 {
   "strands_agent": {
     "model_provider": "bedrock",
-    "model_id": "us.anthropic.claude-3-7-sonnet-20241109-v1:0",
+    "model_id": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
     "temperature": 0.1,
     "max_tokens": 4000,
     "timeout_seconds": 300,
@@ -292,7 +292,7 @@ echo "🔌 Backend API: http://localhost:5000"
 echo ""
 echo "📖 Next steps:"
 echo "1. Configure AWS credentials in backend/.env"
-echo "2. Enable Claude 3.7 Sonnet access in AWS Bedrock console"
+echo "2. Enable Claude 3.5 Sonnet access in AWS Bedrock console"
 echo "3. Open http://localhost:3000 to start adding tools"
 echo ""
 echo "Press Ctrl+C to stop both services"
@@ -490,7 +490,7 @@ echo "   nano backend/.env  # Add your AWS credentials"
 echo ""
 echo "2. Enable AWS Bedrock access:"
 echo "   - Go to AWS Bedrock Console → Model access"
-echo "   - Request access for Claude 3.7 Sonnet in us-west-2"
+echo "   - Request access for Claude 3.5 Sonnet in us-west-2"
 echo "   - Wait for approval (usually instant)"
 echo ""
 echo "3. Start the platform:"

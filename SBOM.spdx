@@ -1,0 +1,313 @@
+SPDXVersion: SPDX-2.3
+DataLicense: CC0-1.0
+SPDXID: SPDXRef-DOCUMENT
+DocumentName: AI Tool Intelligence Platform SBOM
+DocumentNamespace: https://github.com/vosbek/ai-tool-intelligence
+Creator: Tool: Claude Code
+
+# Package Information
+PackageName: ai-tool-intelligence
+SPDXID: SPDXRef-Package
+PackageVersion: 0.1.0
+PackageSupplier: Person: Project Maintainer
+PackageDownloadLocation: https://github.com/vosbek/ai-tool-intelligence
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageLicenseDeclared: MIT
+PackageCopyrightText: NOASSERTION
+PackageDescription: Comprehensive AI tool intelligence platform using AWS Strands Agents for automated research and competitive analysis
+
+# Backend Python Dependencies
+PackageName: Flask
+SPDXID: SPDXRef-Flask
+PackageVersion: 2.3.3
+PackageSupplier: Person: Armin Ronacher
+PackageDownloadLocation: https://pypi.org/project/Flask/2.3.3/
+FilesAnalyzed: false
+PackageLicenseConcluded: BSD-3-Clause
+PackageCopyrightText: NOASSERTION
+
+PackageName: Flask-SQLAlchemy
+SPDXID: SPDXRef-Flask-SQLAlchemy
+PackageVersion: 3.0.5
+PackageSupplier: Organization: Pallets
+PackageDownloadLocation: https://pypi.org/project/Flask-SQLAlchemy/3.0.5/
+FilesAnalyzed: false
+PackageLicenseConcluded: BSD-3-Clause
+PackageCopyrightText: NOASSERTION
+
+PackageName: Flask-CORS
+SPDXID: SPDXRef-Flask-CORS
+PackageVersion: 4.0.0
+PackageSupplier: Person: Cory Dolphin
+PackageDownloadLocation: https://pypi.org/project/Flask-Cors/4.0.0/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: NOASSERTION
+
+PackageName: strands-agents
+SPDXID: SPDXRef-strands-agents
+PackageVersion: NOASSERTION
+PackageSupplier: Organization: AWS
+PackageDownloadLocation: https://pypi.org/project/strands-agents/
+FilesAnalyzed: false
+PackageLicenseConcluded: NOASSERTION
+PackageCopyrightText: NOASSERTION
+
+PackageName: strands-agents-tools
+SPDXID: SPDXRef-strands-agents-tools
+PackageVersion: NOASSERTION
+PackageSupplier: Organization: AWS
+PackageDownloadLocation: https://pypi.org/project/strands-agents-tools/
+FilesAnalyzed: false
+PackageLicenseConcluded: NOASSERTION
+PackageCopyrightText: NOASSERTION
+
+PackageName: boto3
+SPDXID: SPDXRef-boto3
+PackageVersion: 1.34.0
+PackageSupplier: Organization: Amazon Web Services
+PackageDownloadLocation: https://pypi.org/project/boto3/1.34.0/
+FilesAnalyzed: false
+PackageLicenseConcluded: Apache-2.0
+PackageCopyrightText: NOASSERTION
+
+PackageName: botocore
+SPDXID: SPDXRef-botocore
+PackageVersion: 1.34.0
+PackageSupplier: Organization: Amazon Web Services
+PackageDownloadLocation: https://pypi.org/project/botocore/1.34.0/
+FilesAnalyzed: false
+PackageLicenseConcluded: Apache-2.0
+PackageCopyrightText: NOASSERTION
+
+PackageName: beautifulsoup4
+SPDXID: SPDXRef-beautifulsoup4
+PackageVersion: 4.12.2
+PackageSupplier: Person: Leonard Richardson
+PackageDownloadLocation: https://pypi.org/project/beautifulsoup4/4.12.2/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: NOASSERTION
+
+PackageName: requests
+SPDXID: SPDXRef-requests
+PackageVersion: 2.31.0
+PackageSupplier: Person: Kenneth Reitz
+PackageDownloadLocation: https://pypi.org/project/requests/2.31.0/
+FilesAnalyzed: false
+PackageLicenseConcluded: Apache-2.0
+PackageCopyrightText: NOASSERTION
+
+PackageName: lxml
+SPDXID: SPDXRef-lxml
+PackageVersion: 4.9.3
+PackageSupplier: Person: Stefan Behnel
+PackageDownloadLocation: https://pypi.org/project/lxml/4.9.3/
+FilesAnalyzed: false
+PackageLicenseConcluded: BSD-3-Clause
+PackageCopyrightText: NOASSERTION
+
+PackageName: pandas
+SPDXID: SPDXRef-pandas
+PackageVersion: 2.1.0
+PackageSupplier: Organization: PyData Development Team
+PackageDownloadLocation: https://pypi.org/project/pandas/2.1.0/
+FilesAnalyzed: false
+PackageLicenseConcluded: BSD-3-Clause
+PackageCopyrightText: NOASSERTION
+
+PackageName: numpy
+SPDXID: SPDXRef-numpy
+PackageVersion: 1.24.3
+PackageSupplier: Organization: NumPy Developers
+PackageDownloadLocation: https://pypi.org/project/numpy/1.24.3/
+FilesAnalyzed: false
+PackageLicenseConcluded: BSD-3-Clause
+PackageCopyrightText: NOASSERTION
+
+PackageName: python-dotenv
+SPDXID: SPDXRef-python-dotenv
+PackageVersion: 1.0.0
+PackageSupplier: Person: Saurabh Kumar
+PackageDownloadLocation: https://pypi.org/project/python-dotenv/1.0.0/
+FilesAnalyzed: false
+PackageLicenseConcluded: BSD-3-Clause
+PackageCopyrightText: NOASSERTION
+
+PackageName: click
+SPDXID: SPDXRef-click
+PackageVersion: 8.1.7
+PackageSupplier: Organization: Pallets
+PackageDownloadLocation: https://pypi.org/project/click/8.1.7/
+FilesAnalyzed: false
+PackageLicenseConcluded: BSD-3-Clause
+PackageCopyrightText: NOASSERTION
+
+PackageName: schedule
+SPDXID: SPDXRef-schedule
+PackageVersion: 1.2.0
+PackageSupplier: Person: Daniel Bader
+PackageDownloadLocation: https://pypi.org/project/schedule/1.2.0/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: NOASSERTION
+
+PackageName: psutil
+SPDXID: SPDXRef-psutil
+PackageVersion: 5.9.5
+PackageSupplier: Person: Giampaolo Rodola
+PackageDownloadLocation: https://pypi.org/project/psutil/5.9.5/
+FilesAnalyzed: false
+PackageLicenseConcluded: BSD-3-Clause
+PackageCopyrightText: NOASSERTION
+
+PackageName: pytest
+SPDXID: SPDXRef-pytest
+PackageVersion: 7.4.0
+PackageSupplier: Organization: pytest-dev
+PackageDownloadLocation: https://pypi.org/project/pytest/7.4.0/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: NOASSERTION
+
+PackageName: pytest-flask
+SPDXID: SPDXRef-pytest-flask
+PackageVersion: 1.2.1
+PackageSupplier: Person: Vital Kudzelka
+PackageDownloadLocation: https://pypi.org/project/pytest-flask/1.2.1/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: NOASSERTION
+
+PackageName: python-dateutil
+SPDXID: SPDXRef-python-dateutil
+PackageVersion: 2.8.2
+PackageSupplier: Person: Gustavo Niemeyer
+PackageDownloadLocation: https://pypi.org/project/python-dateutil/2.8.2/
+FilesAnalyzed: false
+PackageLicenseConcluded: BSD-3-Clause AND Apache-2.0
+PackageCopyrightText: NOASSERTION
+
+PackageName: gunicorn
+SPDXID: SPDXRef-gunicorn
+PackageVersion: 21.2.0
+PackageSupplier: Person: Benoit Chesneau
+PackageDownloadLocation: https://pypi.org/project/gunicorn/21.2.0/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: NOASSERTION
+
+# Frontend NPM Dependencies
+PackageName: react
+SPDXID: SPDXRef-react
+PackageVersion: 18.2.0
+PackageSupplier: Organization: Meta Platforms Inc
+PackageDownloadLocation: https://registry.npmjs.org/react/-/react-18.2.0.tgz
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: NOASSERTION
+
+PackageName: react-dom
+SPDXID: SPDXRef-react-dom
+PackageVersion: 18.2.0
+PackageSupplier: Organization: Meta Platforms Inc
+PackageDownloadLocation: https://registry.npmjs.org/react-dom/-/react-dom-18.2.0.tgz
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: NOASSERTION
+
+PackageName: react-scripts
+SPDXID: SPDXRef-react-scripts
+PackageVersion: 5.0.1
+PackageSupplier: Organization: Meta Platforms Inc
+PackageDownloadLocation: https://registry.npmjs.org/react-scripts/-/react-scripts-5.0.1.tgz
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: NOASSERTION
+
+PackageName: typescript
+SPDXID: SPDXRef-typescript
+PackageVersion: 4.7.4
+PackageSupplier: Organization: Microsoft Corporation
+PackageDownloadLocation: https://registry.npmjs.org/typescript/-/typescript-4.7.4.tgz
+FilesAnalyzed: false
+PackageLicenseConcluded: Apache-2.0
+PackageCopyrightText: NOASSERTION
+
+PackageName: axios
+SPDXID: SPDXRef-axios
+PackageVersion: 1.4.0
+PackageSupplier: Person: Matt Zabriskie
+PackageDownloadLocation: https://registry.npmjs.org/axios/-/axios-1.4.0.tgz
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: NOASSERTION
+
+PackageName: tailwindcss
+SPDXID: SPDXRef-tailwindcss
+PackageVersion: 3.3.0
+PackageSupplier: Organization: Tailwind Labs
+PackageDownloadLocation: https://registry.npmjs.org/tailwindcss/-/tailwindcss-3.3.0.tgz
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: NOASSERTION
+
+PackageName: lucide-react
+SPDXID: SPDXRef-lucide-react
+PackageVersion: 0.263.1
+PackageSupplier: Organization: Lucide Contributors
+PackageDownloadLocation: https://registry.npmjs.org/lucide-react/-/lucide-react-0.263.1.tgz
+FilesAnalyzed: false
+PackageLicenseConcluded: ISC
+PackageCopyrightText: NOASSERTION
+
+PackageName: recharts
+SPDXID: SPDXRef-recharts
+PackageVersion: 2.7.2
+PackageSupplier: Organization: Recharts Group
+PackageDownloadLocation: https://registry.npmjs.org/recharts/-/recharts-2.7.2.tgz
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: NOASSERTION
+
+PackageName: date-fns
+SPDXID: SPDXRef-date-fns
+PackageVersion: 2.30.0
+PackageSupplier: Person: Sasha Koss
+PackageDownloadLocation: https://registry.npmjs.org/date-fns/-/date-fns-2.30.0.tgz
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: NOASSERTION
+
+# Relationships
+Relationship: SPDXRef-DOCUMENT DESCRIBES SPDXRef-Package
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-Flask
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-Flask-SQLAlchemy
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-Flask-CORS
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-strands-agents
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-strands-agents-tools
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-boto3
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-botocore
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-beautifulsoup4
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-requests
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-lxml
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-pandas
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-numpy
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-python-dotenv
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-click
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-schedule
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-psutil
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-pytest
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-pytest-flask
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-python-dateutil
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-gunicorn
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-react
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-react-dom
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-react-scripts
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-typescript
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-axios
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-tailwindcss
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-lucide-react
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-recharts
+Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-date-fns

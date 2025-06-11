@@ -58,7 +58,7 @@ After setup, you MUST configure AWS credentials:
 3. **Enable Bedrock Access:**
    - Go to [AWS Bedrock Console](https://console.aws.amazon.com/bedrock)
    - Navigate to **Model access**
-   - Request access for **Claude 3.7 Sonnet** in **us-west-2** region
+   - Request access for **Claude 3.5 Sonnet** in **us-west-2** region
    - Wait for approval (usually instant)
 
 ## 🔧 **What the Setup Does**

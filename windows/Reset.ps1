@@ -171,7 +171,7 @@ if ($ResetConfig) {
         $DefaultConfig = @{
             strands_agent = @{
                 model_provider = "bedrock"
-                model_id = "us.anthropic.claude-3-7-sonnet-20241109-v1:0"
+                model_id = "us.anthropic.claude-3-5-sonnet-20241022-v2:0"
                 temperature = 0.1
                 max_tokens = 4000
                 timeout_seconds = 300

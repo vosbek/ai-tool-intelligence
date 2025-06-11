@@ -336,7 +336,7 @@ Your AI Tool Intelligence Platform is ready to use!
 
 2. Enable AWS Bedrock access:
    • Go to AWS Bedrock Console → Model access
-   • Request access for Claude 3.7 Sonnet in us-west-2 region
+   • Request access for Claude 3.5 Sonnet in us-west-2 region
    • Wait for approval (usually instant)
 
 3. Start the platform:
