@@ -1,0 +1,25 @@
+{
+  "rule_id": "custom_enterprise_monitoring",
+  "name": "Enterprise Tool Monitoring",
+  "description": "Enhanced monitoring for enterprise-focused AI tools with immediate alerts for critical changes",
+  "change_types": [
+    "version_bump",
+    "price_change", 
+    "added",
+    "removed"
+  ],
+  "severity_threshold": "medium",
+  "tool_filters": {
+    "priority_levels": [1, 2],
+    "is_open_source": false,
+    "name_patterns": [".*[Ee]nterprise.*", ".*[Pp]ro.*", ".*[Bb]usiness.*"]
+  },
+  "cooldown_minutes": 15,
+  "channels": [
+    "email",
+    "slack", 
+    "webhook",
+    "database"
+  ],
+  "is_active": true
+}

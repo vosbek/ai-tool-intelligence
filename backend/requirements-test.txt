@@ -1,0 +1,36 @@
+# requirements-test.txt - Testing dependencies
+
+# Core testing framework
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-mock>=3.10.0
+pytest-timeout>=2.1.0
+pytest-xdist>=3.0.0
+
+# HTTP mocking and requests testing
+responses>=0.23.0
+requests-mock>=1.10.0
+httmock>=1.4.0
+
+# Data and time mocking
+freezegun>=1.2.0
+factory-boy>=3.2.0
+
+# Code quality and formatting
+flake8>=6.0.0
+black>=23.0.0
+isort>=5.12.0
+mypy>=1.0.0
+
+# Coverage reporting
+coverage[toml]>=7.0.0
+
+# Async testing (if needed)
+pytest-asyncio>=0.21.0
+
+# Environment variable testing
+python-dotenv>=1.0.0
+
+# Additional utilities
+parameterized>=0.9.0
+testfixtures>=7.0.0

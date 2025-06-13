@@ -1,4 +1,4 @@
-# strands_research_tools.py - Complete toolkit for AI tool research
+# strands_research_tools.py - Enhanced toolkit for AI tool research with free APIs
 
 import requests
 import json
@@ -9,6 +9,13 @@ from urllib.parse import urljoin, urlparse
 import time
 from bs4 import BeautifulSoup
 import hashlib
+import sys
+import os
+
+# Import enhanced components
+sys.path.append(os.path.dirname(__file__))
+from config.free_apis_config import FreeAPIConfig, rate_limited, cached_request
+from utils.enhanced_web_scraper import EnhancedWebScraper, extract_pricing_schema, extract_company_schema, extract_features_schema
 
 # =============================================================================
 # CORE RESEARCH TOOLS

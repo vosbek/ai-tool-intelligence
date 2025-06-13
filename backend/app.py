@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import os
 import json
 import sys
+import time
 from typing import Dict, List, Optional
 
 # Import our AWS credential validator
@@ -17,14 +18,66 @@ except ImportError:
     print("Warning: AWS credential validator not available")
     AWSCredentialValidator = None
 
+# Import enhanced system components
+try:
+    from models.enhanced_schema import *
+    from data_curation.curation_engine import CurationEngine
+    from competitive_analysis.market_analyzer import MarketAnalyzer
+    from competitive_analysis.trend_tracker import TrendTracker
+    from competitive_analysis.competitive_integration import CompetitiveIntegrationManager
+    from change_detection.alert_manager import ChangeAlertManager
+    from data_validation.quality_scorer import DataQualityScorer
+    from admin_interface.admin_api import admin_bp
+    from logging_monitoring.system_logger import get_logger, log_api_request, log_database_operation, LogCategory
+    from logging_monitoring.monitoring_dashboard import get_monitoring_dashboard
+    from logging_monitoring.monitoring_api import monitoring_bp
+    ENHANCED_FEATURES_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Enhanced features not available: {e}")
+    ENHANCED_FEATURES_AVAILABLE = False
+    admin_bp = None
+    monitoring_bp = None
+    get_logger = None
+    get_monitoring_dashboard = None
+
+# Import stability and error handling components
+try:
+    from stability.windows_stability import windows_stability, setup_windows_stability, run_startup_validation, get_system_health
+    from stability.error_handler import error_handler, with_circuit_breaker, safe_execute
+    from security.security_middleware import security_middleware, require_admin_auth, require_monitor_auth
+    from config.config_manager import config_manager, get_config
+    STABILITY_FEATURES_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Stability features not available: {e}")
+    STABILITY_FEATURES_AVAILABLE = False
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///ai_tools.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-change-in-production')
 
+# Initialize stability features if available
+if STABILITY_FEATURES_AVAILABLE:
+    # Initialize error handler
+    error_handler.init_app(app)
+    
+    # Initialize security middleware
+    security_middleware.init_app(app)
+    
+    print("✅ Stability and security features initialized")
+
 # Enable CORS for React frontend
 CORS(app)
+
+# Register enhanced blueprints if available
+if admin_bp:
+    app.register_blueprint(admin_bp)
+    print("✅ Admin interface endpoints registered")
+
+if monitoring_bp:
+    app.register_blueprint(monitoring_bp)
+    print("✅ Monitoring interface endpoints registered")
 
 db = SQLAlchemy(app)
 
@@ -167,6 +220,177 @@ class ResearchLog(db.Model):
     started_at = db.Column(db.DateTime, default=datetime.utcnow)
     completed_at = db.Column(db.DateTime)
 
+# Enhanced System Services
+class EnhancedSystemManager:
+    """Manager for all enhanced competitive intelligence features"""
+    
+    def __init__(self):
+        if not ENHANCED_FEATURES_AVAILABLE:
+            self.available = False
+            return
+        
+        try:
+            database_url = os.getenv('DATABASE_URL', 'sqlite:///ai_tools.db')
+            
+            # Initialize all enhanced components
+            self.curation_engine = CurationEngine(database_url)
+            self.market_analyzer = MarketAnalyzer(database_url)
+            self.trend_tracker = TrendTracker(database_url)
+            self.competitive_integration = CompetitiveIntegrationManager(database_url)
+            self.alert_manager = ChangeAlertManager(database_url)
+            self.quality_scorer = DataQualityScorer(database_url)
+            
+            # Setup integrations
+            self.competitive_integration.setup_curation_hooks()
+            self.competitive_integration.setup_batch_monitoring_hooks()
+            
+            self.available = True
+            print("✅ Enhanced competitive intelligence system initialized")
+            
+        except Exception as e:
+            print(f"Error initializing enhanced system: {e}")
+            self.available = False
+    
+    def curate_tool_data(self, tool_id: int) -> Dict:
+        """Curate tool data with competitive analysis"""
+        if not self.available:
+            return {"error": "Enhanced features not available"}
+        
+        try:
+            # Run curation
+            result = self.curation_engine.curate_tool_data(tool_id)
+            
+            # Trigger competitive analysis if significant changes
+            if result.get('changes_detected'):
+                self.competitive_integration.trigger_immediate_analysis(tool_id, 'standard')
+            
+            return result
+            
+        except Exception as e:
+            return {"error": str(e)}
+    
+    def analyze_competition(self, category_id: int) -> Dict:
+        """Analyze competitive landscape for category"""
+        if not self.available:
+            return {"error": "Enhanced features not available"}
+        
+        try:
+            report = self.market_analyzer.analyze_category_competition(category_id, 'comprehensive')
+            
+            # Convert to JSON-serializable format
+            return {
+                "analysis_id": report.analysis_id,
+                "category": report.category,
+                "total_tools": report.total_tools,
+                "confidence_level": report.confidence_level,
+                "market_leaders": [
+                    {
+                        "tool_name": m.tool_name,
+                        "overall_score": m.overall_score,
+                        "feature_score": m.feature_score,
+                        "popularity_score": m.popularity_score,
+                        "innovation_score": m.innovation_score,
+                        "maturity_score": m.maturity_score
+                    } for m in report.market_leaders
+                ],
+                "key_insights": report.key_insights,
+                "recommendations": report.recommendations,
+                "trending_features": report.trending_features
+            }
+            
+        except Exception as e:
+            return {"error": str(e)}
+    
+    def track_trends(self, trend_type: str = 'features', days: int = 90) -> Dict:
+        """Track market trends"""
+        if not self.available:
+            return {"error": "Enhanced features not available"}
+        
+        try:
+            if trend_type == 'features':
+                trends = self.trend_tracker.track_feature_adoption_trends(days)
+            elif trend_type == 'pricing':
+                trends = self.trend_tracker.track_pricing_evolution(None, days)
+            elif trend_type == 'technology':
+                trends = self.trend_tracker.detect_technology_shifts(days)
+            else:
+                return {"error": "Invalid trend type"}
+            
+            # Convert to JSON-serializable format
+            return {
+                "trend_type": trend_type,
+                "analysis_period_days": days,
+                "trends_detected": len(trends),
+                "trends": [
+                    {
+                        "trend_name": t.trend_name,
+                        "direction": t.direction.value,
+                        "significance": t.significance.value,
+                        "strength": t.strength,
+                        "velocity": t.velocity,
+                        "duration_days": t.duration_days,
+                        "implications": t.implications[:3],
+                        "recommendations": t.recommendations[:3]
+                    } for t in trends[:10]  # Top 10 trends
+                ]
+            }
+            
+        except Exception as e:
+            return {"error": str(e)}
+    
+    def generate_forecast(self, category_id: int = None, horizon_days: int = 90) -> Dict:
+        """Generate market forecast"""
+        if not self.available:
+            return {"error": "Enhanced features not available"}
+        
+        try:
+            forecast = self.trend_tracker.generate_market_forecast(category_id, horizon_days)
+            
+            return {
+                "forecast_id": forecast.forecast_id,
+                "horizon_days": forecast.forecast_horizon_days,
+                "data_quality": forecast.data_quality,
+                "accuracy_estimate": forecast.forecast_accuracy_estimate,
+                "emerging_technologies": forecast.emerging_technologies,
+                "declining_technologies": forecast.declining_technologies,
+                "price_movements": forecast.price_movements,
+                "market_disruptions": forecast.market_disruptions
+            }
+            
+        except Exception as e:
+            return {"error": str(e)}
+    
+    def get_competitive_digest(self, hours: int = 24) -> Dict:
+        """Get competitive analysis digest"""
+        if not self.available:
+            return {"error": "Enhanced features not available"}
+        
+        try:
+            digest = self.competitive_integration.generate_competitive_digest(hours)
+            
+            return {
+                "digest_id": digest.digest_id,
+                "period_start": digest.period_start.isoformat(),
+                "period_end": digest.period_end.isoformat(),
+                "total_changes": digest.total_changes,
+                "new_trends": digest.new_trends,
+                "opportunities": digest.opportunities,
+                "threats": digest.threats,
+                "top_insights": [
+                    {
+                        "title": i.title,
+                        "description": i.description,
+                        "severity": i.severity,
+                        "confidence": i.confidence
+                    } for i in digest.top_insights[:5]
+                ],
+                "recommendations": digest.recommendations,
+                "data_quality_score": digest.data_quality_score
+            }
+            
+        except Exception as e:
+            return {"error": str(e)}
+
 # AWS Strands Agent Service
 class StrandsAgentService:
     def __init__(self):
@@ -222,8 +446,14 @@ Always be thorough and cite sources when possible. If information is not availab
         prompt = self._build_research_prompt(tool)
         
         try:
-            # Use Strands Agent to research
-            response = self.agent(prompt)
+            # Use circuit breaker if available
+            if STABILITY_FEATURES_AVAILABLE:
+                @with_circuit_breaker('external_api')
+                def protected_research():
+                    return self.agent(prompt)
+                response = protected_research()
+            else:
+                response = self.agent(prompt)
             
             # Parse response as JSON if possible
             result = self._parse_agent_response(response)
@@ -495,6 +725,185 @@ def get_categories():
     categories = Category.query.all()
     return jsonify([category_to_dict(cat) for cat in categories])
 
+# Enhanced Competitive Intelligence API Endpoints
+
+@app.route('/api/tools/<int:tool_id>/curate', methods=['POST'])
+def curate_tool_data(tool_id):
+    """Enhanced curation with competitive analysis"""
+    enhanced_system = EnhancedSystemManager()
+    
+    if not enhanced_system.available:
+        # Fallback to basic research
+        return research_tool(tool_id)
+    
+    try:
+        result = enhanced_system.curate_tool_data(tool_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/categories/<int:category_id>/competitive-analysis', methods=['GET'])
+def analyze_category_competition(category_id):
+    """Get competitive analysis for a category"""
+    enhanced_system = EnhancedSystemManager()
+    
+    if not enhanced_system.available:
+        return jsonify({'error': 'Enhanced competitive analysis not available'}), 503
+    
+    try:
+        analysis = enhanced_system.analyze_competition(category_id)
+        return jsonify(analysis)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/market/trends', methods=['GET'])
+def get_market_trends():
+    """Get market trends analysis"""
+    trend_type = request.args.get('type', 'features')
+    days = request.args.get('days', 90, type=int)
+    
+    enhanced_system = EnhancedSystemManager()
+    
+    if not enhanced_system.available:
+        return jsonify({'error': 'Enhanced trend tracking not available'}), 503
+    
+    try:
+        trends = enhanced_system.track_trends(trend_type, days)
+        return jsonify(trends)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/market/forecast', methods=['GET'])
+def get_market_forecast():
+    """Get market forecast"""
+    category_id = request.args.get('category_id', type=int)
+    horizon_days = request.args.get('horizon_days', 90, type=int)
+    
+    enhanced_system = EnhancedSystemManager()
+    
+    if not enhanced_system.available:
+        return jsonify({'error': 'Enhanced forecasting not available'}), 503
+    
+    try:
+        forecast = enhanced_system.generate_forecast(category_id, horizon_days)
+        return jsonify(forecast)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/competitive/digest', methods=['GET'])
+def get_competitive_digest():
+    """Get competitive analysis digest"""
+    hours = request.args.get('hours', 24, type=int)
+    
+    enhanced_system = EnhancedSystemManager()
+    
+    if not enhanced_system.available:
+        return jsonify({'error': 'Enhanced competitive digest not available'}), 503
+    
+    try:
+        digest = enhanced_system.get_competitive_digest(hours)
+        return jsonify(digest)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/competitive/compare', methods=['POST'])
+def compare_tools():
+    """Compare multiple tools competitively"""
+    data = request.json
+    tool_ids = data.get('tool_ids', [])
+    comparison_type = data.get('type', 'comprehensive')
+    
+    if len(tool_ids) < 2:
+        return jsonify({'error': 'At least 2 tools required for comparison'}), 400
+    
+    enhanced_system = EnhancedSystemManager()
+    
+    if not enhanced_system.available:
+        return jsonify({'error': 'Enhanced tool comparison not available'}), 503
+    
+    try:
+        # Use market analyzer for tool comparison
+        comparison = enhanced_system.market_analyzer.compare_tools(tool_ids, comparison_type)
+        return jsonify(comparison)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/market/opportunities', methods=['GET'])
+def detect_market_opportunities():
+    """Detect market opportunities"""
+    category_id = request.args.get('category_id', type=int)
+    
+    enhanced_system = EnhancedSystemManager()
+    
+    if not enhanced_system.available:
+        return jsonify({'error': 'Enhanced opportunity detection not available'}), 503
+    
+    try:
+        opportunities = enhanced_system.market_analyzer.detect_market_opportunities(category_id)
+        return jsonify(opportunities)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/tools/<int:tool_id>/quality-score', methods=['GET'])
+def get_tool_quality_score(tool_id):
+    """Get data quality score for a tool"""
+    enhanced_system = EnhancedSystemManager()
+    
+    if not enhanced_system.available:
+        return jsonify({'error': 'Enhanced quality scoring not available'}), 503
+    
+    try:
+        score = enhanced_system.quality_scorer.calculate_tool_quality_score(tool_id)
+        return jsonify({'tool_id': tool_id, 'quality_score': score})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/system/status', methods=['GET'])
+def get_system_status():
+    """Get enhanced system status"""
+    status = {
+        'enhanced_features_available': ENHANCED_FEATURES_AVAILABLE,
+        'stability_features_available': STABILITY_FEATURES_AVAILABLE,
+        'components': {
+            'competitive_analysis': ENHANCED_FEATURES_AVAILABLE,
+            'trend_tracking': ENHANCED_FEATURES_AVAILABLE,
+            'data_curation': ENHANCED_FEATURES_AVAILABLE,
+            'quality_scoring': ENHANCED_FEATURES_AVAILABLE,
+            'alert_system': ENHANCED_FEATURES_AVAILABLE,
+            'error_handling': STABILITY_FEATURES_AVAILABLE,
+            'security_middleware': STABILITY_FEATURES_AVAILABLE,
+            'windows_stability': STABILITY_FEATURES_AVAILABLE
+        },
+        'timestamp': datetime.utcnow().isoformat()
+    }
+    
+    # Add system health if stability features are available
+    if STABILITY_FEATURES_AVAILABLE:
+        try:
+            status['system_health'] = get_system_health()
+            status['error_summary'] = error_handler.get_system_health()
+        except Exception as e:
+            status['health_error'] = str(e)
+    
+    return jsonify(status)
+
+@app.route('/api/system/health', methods=['GET'])
+def get_detailed_system_health():
+    """Get detailed system health information"""
+    if not STABILITY_FEATURES_AVAILABLE:
+        return jsonify({'error': 'Stability features not available'}), 503
+    
+    try:
+        health_data = {
+            'timestamp': datetime.utcnow().isoformat(),
+            'system_info': get_system_health(),
+            'error_tracking': error_handler.get_system_health(),
+            'uptime_seconds': time.time() - app.config.get('START_TIME', time.time())
+        }
+        return jsonify(health_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 def tool_to_dict(tool, include_relations=False):
     data = {
         'id': tool.id,
@@ -692,8 +1101,33 @@ def update_tool_from_research(tool, research_data):
                 tool.starting_price = min(tier['price_monthly'] for tier in paid_tiers)
 
 if __name__ == '__main__':
+    # Record startup time
+    app.config['START_TIME'] = time.time()
+    
     # Validate AWS setup before starting
     print("🚀 Starting AI Tool Intelligence Platform")
+    
+    # Initialize Windows stability features if available
+    if STABILITY_FEATURES_AVAILABLE:
+        print("🔄 Initializing Windows stability features...")
+        try:
+            # Setup Windows-specific optimizations and paths
+            optimized_config = setup_windows_stability({
+                'log_dir': 'logs',
+                'backup_dir': 'backups',
+                'data_dir': 'data',
+                'temp_dir': 'temp'
+            })
+            
+            # Run startup validation
+            if not run_startup_validation():
+                print("⚠️  Some startup checks failed, but continuing...")
+            else:
+                print("✅ All startup validation checks passed")
+            
+            print("✅ Windows stability features initialized")
+        except Exception as e:
+            print(f"⚠️  Warning: Windows stability initialization failed: {e}")
     
     # Skip AWS validation in development mode if SKIP_AWS_VALIDATION is set
     if not os.getenv('SKIP_AWS_VALIDATION'):
@@ -707,6 +1141,56 @@ if __name__ == '__main__':
     # Initialize database
     with app.app_context():
         db.create_all()
+        
+        # Initialize enhanced schema if available
+        if ENHANCED_FEATURES_AVAILABLE:
+            try:
+                print("🔄 Initializing enhanced competitive intelligence schema...")
+                # Import and run migrations
+                from migrations.migrate_to_enhanced_schema import run_migration
+                run_migration()
+                print("✅ Enhanced schema initialized")
+                
+                # Initialize enhanced system
+                enhanced_system = EnhancedSystemManager()
+                if enhanced_system.available:
+                    print("✅ Enhanced competitive intelligence system ready")
+                    
+                    # Start real-time monitoring (optional)
+                    if os.getenv('ENABLE_REAL_TIME_MONITORING', 'false').lower() == 'true':
+                        enhanced_system.competitive_integration.start_real_time_monitoring()
+                        print("🔍 Real-time competitive monitoring started")
+                
+                # Initialize logging and monitoring system
+                if get_logger and get_monitoring_dashboard:
+                    try:
+                        print("🔄 Initializing comprehensive logging and monitoring...")
+                        
+                        # Initialize global logger
+                        logger = get_logger()
+                        logger.info(
+                            LogCategory.SYSTEM, 'application',
+                            "AI Tool Intelligence Platform starting up"
+                        )
+                        
+                        # Initialize monitoring dashboard
+                        dashboard = get_monitoring_dashboard()
+                        
+                        # Start monitoring if enabled
+                        if os.getenv('ENABLE_MONITORING', 'true').lower() == 'true':
+                            monitoring_interval = int(os.getenv('MONITORING_INTERVAL_SECONDS', '60'))
+                            dashboard.start_monitoring(monitoring_interval)
+                            print(f"📊 Real-time monitoring started (interval: {monitoring_interval}s)")
+                        
+                        print("✅ Logging and monitoring system initialized")
+                        
+                    except Exception as e:
+                        print(f"⚠️  Warning: Logging and monitoring initialization failed: {e}")
+                        print("📝 Application will continue without enhanced monitoring")
+                
+            except Exception as e:
+                print(f"⚠️  Enhanced features initialization failed: {e}")
+                print("📝 Application will continue with basic features only")
         
         # Add sample data if database is empty
         if Category.query.count() == 0:
@@ -751,10 +1235,53 @@ if __name__ == '__main__':
             db.session.commit()
             print("✅ Sample data added to database")
     
+    # Register graceful shutdown if stability features are available
+    if STABILITY_FEATURES_AVAILABLE:
+        try:
+            # Register Flask app shutdown
+            def shutdown_flask():
+                print("🔄 Shutting down Flask application...")
+            
+            windows_stability.register_shutdown_callback(shutdown_flask, "Flask Application")
+            
+            # Register database cleanup
+            def cleanup_database():
+                try:
+                    db.session.close()
+                    print("✅ Database connections closed")
+                except:
+                    pass
+            
+            windows_stability.register_cleanup_task(cleanup_database, "Database Cleanup")
+            
+        except Exception as e:
+            print(f"⚠️  Warning: Could not register shutdown callbacks: {e}")
+    
     # Start Flask development server
     print("🚀 Starting AI Tool Intelligence Platform")
     print("Frontend: http://localhost:3000")
     print("Backend API: http://localhost:5000")
     print("Health Check: http://localhost:5000/api/health")
+    if STABILITY_FEATURES_AVAILABLE:
+        print("System Health: http://localhost:5000/api/system/health")
+    print("\n✅ Application ready for requests")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    try:
+        app.run(debug=True, host='0.0.0.0', port=5000)
+    except KeyboardInterrupt:
+        if STABILITY_FEATURES_AVAILABLE:
+            print("\n🔄 Initiating graceful shutdown...")
+            windows_stability.graceful_shutdown()
+        else:
+            print("\n👋 Application stopped")
+    except Exception as e:
+        if STABILITY_FEATURES_AVAILABLE:
+            # Create crash report
+            crash_file = windows_stability.create_crash_report(e, {
+                'component': 'Flask Application',
+                'stage': 'Runtime'
+            })
+            print(f"\n❌ Application crashed. Report saved: {crash_file}")
+        else:
+            print(f"\n❌ Application crashed: {e}")
+        raise

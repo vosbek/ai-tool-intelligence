@@ -121,26 +121,45 @@ class AWSCredentialValidator:
             except Exception as e:
                 print(f"⚠️  Environment variables present but invalid: {e}")
         
-        # Priority 2: AWS Profile
+        # Priority 2: AWS Profile (includes SSO profiles)
         profile_name = os.getenv('AWS_PROFILE', 'default')
         try:
             session = boto3.Session(profile_name=profile_name, region_name=self.region)
-            session.client('sts').get_caller_identity()
-            print(f"✅ Using AWS profile: {profile_name}")
-            return f"AWS Profile ({profile_name})", session
+            identity = session.client('sts').get_caller_identity()
+            
+            # Check if this is an SSO session
+            credentials = session.get_credentials()
+            if credentials and hasattr(credentials, 'token') and credentials.token:
+                print(f"✅ Using AWS SSO profile: {profile_name}")
+                return f"AWS SSO Profile ({profile_name})", session
+            else:
+                print(f"✅ Using AWS profile: {profile_name}")
+                return f"AWS Profile ({profile_name})", session
+                
         except (ProfileNotFound, NoCredentialsError):
             print(f"⚠️  AWS profile '{profile_name}' not found or invalid")
+            if profile_name != 'default':
+                print(f"💡 Hint: If using SSO, ensure you're logged in with: aws sso login --profile {profile_name}")
         except Exception as e:
-            print(f"⚠️  AWS profile error: {e}")
+            error_msg = str(e).lower()
+            if 'sso' in error_msg or 'token' in error_msg:
+                print(f"⚠️  AWS SSO session expired or invalid")
+                print(f"💡 Try: aws sso login --profile {profile_name}")
+            else:
+                print(f"⚠️  AWS profile error: {e}")
         
-        # Priority 3: Default credential chain (includes .aws/credentials)
+        # Priority 3: Default credential chain (includes .aws/credentials and other sources)
         try:
             session = boto3.Session(region_name=self.region)
-            session.client('sts').get_caller_identity()
+            identity = session.client('sts').get_caller_identity()
             
             # Try to determine source
             credentials = session.get_credentials()
             if credentials:
+                # Check if it's SSO
+                if hasattr(credentials, 'token') and credentials.token:
+                    print(f"✅ Using AWS SSO (default profile)")
+                    return "AWS SSO (default)", session
                 # Check if it's from .aws/credentials file
                 aws_dir = Path.home() / '.aws'
                 if (aws_dir / 'credentials').exists():
@@ -150,7 +169,12 @@ class AWSCredentialValidator:
                     print(f"✅ Using default credential chain")
                     return "Default credential chain", session
         except Exception as e:
-            print(f"⚠️  Default credential chain failed: {e}")
+            error_msg = str(e).lower()
+            if 'sso' in error_msg or 'token' in error_msg:
+                print(f"⚠️  Default AWS SSO session expired")
+                print(f"💡 Try: aws sso login")
+            else:
+                print(f"⚠️  Default credential chain failed: {e}")
         
         return None, None
     
@@ -174,26 +198,46 @@ class AWSCredentialValidator:
         print("=" * 50)
         print("\nCredentials are checked in this priority order:")
         print("1. Environment Variables (highest priority)")
-        print("2. AWS Profile")
+        print("2. AWS Profile (including SSO profiles)")
         print("3. .aws/credentials file")
         print("4. Default credential chain")
         
         print("\n🔧 Setup Options:")
-        print("\n1. Environment Variables (Recommended for Docker/CI):")
+        
+        print("\n1. AWS SSO (Recommended for Enterprise):")
+        print("   # Configure SSO profile")
+        print("   aws configure sso --profile your-sso-profile")
+        print("   # Follow prompts for:")
+        print("   #   - SSO start URL (e.g., https://company.awsapps.com/start)")
+        print("   #   - SSO region")
+        print("   #   - Account ID and role")
+        print("   #   - Default region (us-east-1)")
+        print("   ")
+        print("   # Login to SSO")
+        print("   aws sso login --profile your-sso-profile")
+        print("   ")
+        print("   # Use the profile")
+        print("   export AWS_PROFILE=your-sso-profile")
+        print("   # OR set in .env file:")
+        print("   # AWS_PROFILE=your-sso-profile")
+        
+        print("\n2. Environment Variables (for Docker/CI):")
         print("   export AWS_ACCESS_KEY_ID=your-access-key")
         print("   export AWS_SECRET_ACCESS_KEY=your-secret-key")
         print("   export AWS_REGION=us-east-1")
         
-        print("\n2. .env file (for local development):")
+        print("\n3. .env file (for local development):")
         print("   AWS_ACCESS_KEY_ID=your-access-key")
         print("   AWS_SECRET_ACCESS_KEY=your-secret-key")
         print("   AWS_REGION=us-east-1")
+        print("   # OR for SSO:")
+        print("   AWS_PROFILE=your-sso-profile")
         
-        print("\n3. AWS Profile (using AWS CLI):")
+        print("\n4. AWS Profile (traditional credentials):")
         print("   aws configure --profile your-profile")
         print("   export AWS_PROFILE=your-profile")
         
-        print("\n4. .aws/credentials file:")
+        print("\n5. .aws/credentials file (default):")
         print("   aws configure")
         print("   (This creates ~/.aws/credentials and ~/.aws/config)")
         
@@ -201,6 +245,12 @@ class AWSCredentialValidator:
         print(f"   - AWS Account with Bedrock access")
         print(f"   - Claude 3.5 Sonnet enabled in {self.region}")
         print(f"   - Proper IAM permissions for Bedrock")
+        
+        print(f"\n💡 SSO Troubleshooting:")
+        print(f"   - If SSO session expires: aws sso login --profile your-profile")
+        print(f"   - Check SSO status: aws sts get-caller-identity --profile your-profile")
+        print(f"   - List configured profiles: aws configure list-profiles")
+        print(f"   - SSO browser issues: Use --no-browser flag or check browser settings")
 
 def main():
     """Main validation function"""

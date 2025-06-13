@@ -5,7 +5,8 @@
       "Bash(touch:*)",
       "Bash(grep:*)",
       "Bash(find:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "WebFetch(domain:docs.firecrawl.dev)"
     ],
     "deny": []
   }
