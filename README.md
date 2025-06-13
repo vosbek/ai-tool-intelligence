@@ -30,10 +30,19 @@ A complete competitive intelligence platform that automatically researches AI de
 - **Export Capabilities**: Multi-format data export (JSON, CSV, Excel) for external analysis
 - **System Analytics**: Performance tracking, trend analysis, and operational insights
 
-## 🚀 Quick Start (15 Minutes to MVP)
+## 📚 Documentation Hub
 
-### New Machine? Start Here! 
-**👉 [INSTALL.md](INSTALL.md) - Complete new machine setup guide**
+**👉 [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md) - Complete documentation guide with organized links to all docs**
+
+### 🚀 **Quick Links by Use Case:**
+- **🆕 New machine installation**: [NEW_MACHINE_CHECKLIST.md](NEW_MACHINE_CHECKLIST.md)
+- **⚡ Fast 15-minute setup**: [QUICK_START.md](QUICK_START.md)
+- **🖥️ Windows management**: [windows/README.md](windows/README.md)
+- **🐛 Troubleshooting**: [WINDOWS_SETUP.md](WINDOWS_SETUP.md)
+- **☁️ AWS configuration**: [AWS_SETUP.md](AWS_SETUP.md)
+- **🏢 Enterprise features**: [APPLICATION_WORKFLOW.md](APPLICATION_WORKFLOW.md)
+
+## 🚀 Quick Start (15 Minutes to MVP)
 
 ### Prerequisites
 
