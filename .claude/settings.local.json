@@ -6,7 +6,26 @@
       "Bash(grep:*)",
       "Bash(find:*)",
       "Bash(sed:*)",
-      "WebFetch(domain:docs.firecrawl.dev)"
+      "WebFetch(domain:docs.firecrawl.dev)",
+      "Bash(python:*)",
+      "Bash(pip3 list:*)",
+      "Bash(rg:*)",
+      "Bash(pip3 install:*)",
+      "Bash(npm install)",
+      "Bash(source:*)",
+      "Bash(pip install:*)",
+      "Bash(SKIP_AWS_VALIDATION=1 python3 app.py)",
+      "Bash(pipx install:*)",
+      "Bash(apt list:*)",
+      "Bash(curl:*)",
+      "Bash(npm start)",
+      "Bash(sqlite3:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(cp:*)",
+      "Bash(true)",
+      "Bash(rm:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

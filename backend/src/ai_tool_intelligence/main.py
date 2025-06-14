@@ -1,0 +1,1306 @@
+#!/usr/bin/env python3
+# app.py - Main Flask application with all endpoints
+
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime, timedelta
+import os
+import json
+import sys
+import time
+from typing import Dict, List, Optional
+
+# Import our AWS credential validator
+try:
+    from .utils.aws_validator import AWSCredentialValidator
+except ImportError:
+    print("Warning: AWS credential validator not available")
+    AWSCredentialValidator = None
+
+# Import enhanced system components
+try:
+    from .models.database import *
+    from .core.research.curation_engine import CurationEngine
+    from .core.competitive.market_analyzer import MarketAnalyzer
+    from .core.competitive.trend_tracker import TrendTracker
+    from .core.competitive.competitive_integration import CompetitiveIntegrationManager
+    from .core.research.alert_manager import ChangeAlertManager
+    from .core.research.quality_scorer import DataQualityScorer
+    from .core.admin.admin_api import admin_bp
+    from .services.system_logger import get_logger, log_api_request, log_database_operation, LogCategory
+    from .services.monitoring_dashboard import get_monitoring_dashboard
+    from .services.monitoring_api import monitoring_bp
+    ENHANCED_FEATURES_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Enhanced features not available: {e}")
+    ENHANCED_FEATURES_AVAILABLE = False
+    admin_bp = None
+    monitoring_bp = None
+    get_logger = None
+    get_monitoring_dashboard = None
+
+# Import stability and error handling components
+try:
+    from .utils.windows_stability import windows_stability, setup_windows_stability, run_startup_validation, get_system_health
+    from .utils.error_handler import error_handler, with_circuit_breaker, safe_execute
+    from .api.middleware.security_middleware import security_middleware, require_admin_auth, require_monitor_auth
+    from .config.settings import config_manager, get_config
+    STABILITY_FEATURES_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: Stability features not available: {e}")
+    STABILITY_FEATURES_AVAILABLE = False
+
+def create_app(config_name='development'):
+    """Application factory pattern for Flask app creation"""
+    app = Flask(__name__)
+    
+    # Configuration
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///instance/ai_tools.db')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['UPLOAD_FOLDER'] = 'instance/uploads'
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-change-in-production')
+    
+    # Ensure directories exist
+    os.makedirs('instance', exist_ok=True)
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    
+    # Initialize stability features if available
+    if STABILITY_FEATURES_AVAILABLE:
+        # Initialize error handler
+        if hasattr(error_handler, 'init_app'):
+            error_handler.init_app(app)
+        
+        # Initialize security middleware
+        if hasattr(security_middleware, 'init_app'):
+            security_middleware.init_app(app)
+        
+        print("✅ Stability and security features initialized")
+
+    # Enable CORS for React frontend
+    CORS(app)
+
+    # Initialize database
+    from .models.database import db
+    db.init_app(app)
+    
+    # Register enhanced blueprints if available
+    if admin_bp:
+        app.register_blueprint(admin_bp)
+        print("✅ Admin interface endpoints registered")
+
+    if monitoring_bp:
+        app.register_blueprint(monitoring_bp)
+        print("✅ Monitoring interface endpoints registered")
+    
+    # Import and register main routes
+    register_routes(app, db)
+    
+    return app
+
+def register_routes(app, db):
+
+# Ensure upload directory exists
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# Models
+class Category(db.Model):
+    __tablename__ = 'categories'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    parent_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
+    description = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    children = db.relationship('Category', backref=db.backref('parent', remote_side=[id]))
+    tools = db.relationship('Tool', backref='category')
+
+class Tool(db.Model):
+    __tablename__ = 'tools'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
+    
+    # Basic info
+    description = db.Column(db.Text)
+    website_url = db.Column(db.String(500))
+    github_url = db.Column(db.String(500))
+    documentation_url = db.Column(db.String(500))
+    changelog_url = db.Column(db.String(500))
+    blog_url = db.Column(db.String(500))
+    
+    # Tool details
+    is_open_source = db.Column(db.Boolean, default=False)
+    license_type = db.Column(db.String(100))
+    primary_language = db.Column(db.String(50))
+    supported_platforms = db.Column(db.Text)  # JSON
+    
+    # Pricing
+    pricing_model = db.Column(db.String(50))
+    free_tier_available = db.Column(db.Boolean, default=False)
+    starting_price = db.Column(db.Numeric(10, 2))
+    pricing_currency = db.Column(db.String(3), default='USD')
+    pricing_details = db.Column(db.Text)
+    
+    # Processing status
+    processing_status = db.Column(db.String(20), default='never_run')
+    last_processed_at = db.Column(db.DateTime)
+    next_process_date = db.Column(db.DateTime)
+    
+    # Manual fields
+    internal_notes = db.Column(db.Text)
+    enterprise_position = db.Column(db.Text)
+    screenshots = db.Column(db.Text)  # JSON
+    videos = db.Column(db.Text)  # JSON
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    company = db.relationship('Company', backref='tool', uselist=False)
+    features = db.relationship('ToolFeature', backref='tool')
+    integrations = db.relationship('ToolIntegration', backref='tool')
+    sdlc_mappings = db.relationship('SDLCMapping', backref='tool')
+    research_logs = db.relationship('ResearchLog', backref='tool')
+
+class Company(db.Model):
+    __tablename__ = 'companies'
+    id = db.Column(db.Integer, primary_key=True)
+    tool_id = db.Column(db.Integer, db.ForeignKey('tools.id'), nullable=False)
+    
+    name = db.Column(db.String(200))
+    website = db.Column(db.String(500))
+    founded_year = db.Column(db.Integer)
+    headquarters = db.Column(db.String(200))
+    
+    stock_symbol = db.Column(db.String(10))
+    is_public = db.Column(db.Boolean, default=False)
+    estimated_arr = db.Column(db.Numeric(15, 2))
+    last_funding_round = db.Column(db.String(50))
+    total_funding = db.Column(db.Numeric(15, 2))
+    valuation = db.Column(db.Numeric(15, 2))
+    
+    employee_count = db.Column(db.Integer)
+    employee_count_source = db.Column(db.String(100))
+    key_executives = db.Column(db.Text)  # JSON
+    
+    strategic_focus = db.Column(db.Text)
+    business_model = db.Column(db.String(100))
+    target_market = db.Column(db.Text)
+    competitors = db.Column(db.Text)  # JSON
+    
+    data_last_updated = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    stock_prices = db.relationship('StockPrice', backref='company')
+
+class StockPrice(db.Model):
+    __tablename__ = 'stock_prices'
+    id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer, db.ForeignKey('companies.id'), nullable=False)
+    price = db.Column(db.Numeric(10, 2))
+    currency = db.Column(db.String(3), default='USD')
+    recorded_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class ToolFeature(db.Model):
+    __tablename__ = 'tool_features'
+    id = db.Column(db.Integer, primary_key=True)
+    tool_id = db.Column(db.Integer, db.ForeignKey('tools.id'), nullable=False)
+    feature_category = db.Column(db.String(100))
+    feature_name = db.Column(db.String(200))
+    feature_description = db.Column(db.Text)
+    is_core_feature = db.Column(db.Boolean, default=True)
+
+class ToolIntegration(db.Model):
+    __tablename__ = 'tool_integrations'
+    id = db.Column(db.Integer, primary_key=True)
+    tool_id = db.Column(db.Integer, db.ForeignKey('tools.id'), nullable=False)
+    integration_type = db.Column(db.String(50))
+    integration_name = db.Column(db.String(200))
+    integration_description = db.Column(db.Text)
+    integration_url = db.Column(db.String(500))
+
+class SDLCMapping(db.Model):
+    __tablename__ = 'sdlc_mappings'
+    id = db.Column(db.Integer, primary_key=True)
+    tool_id = db.Column(db.Integer, db.ForeignKey('tools.id'), nullable=False)
+    sdlc_phase = db.Column(db.String(100))
+    phase_description = db.Column(db.Text)
+    relevance_score = db.Column(db.Integer)
+
+class ResearchLog(db.Model):
+    __tablename__ = 'research_logs'
+    id = db.Column(db.Integer, primary_key=True)
+    tool_id = db.Column(db.Integer, db.ForeignKey('tools.id'), nullable=False)
+    research_type = db.Column(db.String(50))
+    status = db.Column(db.String(20))
+    bedrock_agent_id = db.Column(db.String(100))
+    data_collected = db.Column(db.Text)  # JSON
+    errors = db.Column(db.Text)
+    started_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)
+
+# Enhanced System Services
+class EnhancedSystemManager:
+    """Manager for all enhanced competitive intelligence features"""
+    
+    def __init__(self):
+        if not ENHANCED_FEATURES_AVAILABLE:
+            self.available = False
+            return
+        
+        try:
+            database_url = os.getenv('DATABASE_URL', 'sqlite:///ai_tools.db')
+            
+            # Initialize all enhanced components
+            self.curation_engine = CurationEngine(database_url)
+            self.market_analyzer = MarketAnalyzer(database_url)
+            self.trend_tracker = TrendTracker(database_url)
+            self.competitive_integration = CompetitiveIntegrationManager(database_url)
+            self.alert_manager = ChangeAlertManager(database_url)
+            self.quality_scorer = DataQualityScorer(database_url)
+            
+            # Setup integrations
+            self.competitive_integration.setup_curation_hooks()
+            self.competitive_integration.setup_batch_monitoring_hooks()
+            
+            self.available = True
+            print("✅ Enhanced competitive intelligence system initialized")
+            
+        except Exception as e:
+            print(f"Error initializing enhanced system: {e}")
+            self.available = False
+    
+    def curate_tool_data(self, tool_id: int) -> Dict:
+        """Curate tool data with competitive analysis"""
+        if not self.available:
+            return {"error": "Enhanced features not available"}
+        
+        try:
+            # Run curation
+            result = self.curation_engine.curate_tool_data(tool_id)
+            
+            # Trigger competitive analysis if significant changes
+            if result.get('changes_detected'):
+                self.competitive_integration.trigger_immediate_analysis(tool_id, 'standard')
+            
+            return result
+            
+        except Exception as e:
+            return {"error": str(e)}
+    
+    def analyze_competition(self, category_id: int) -> Dict:
+        """Analyze competitive landscape for category"""
+        if not self.available:
+            return {"error": "Enhanced features not available"}
+        
+        try:
+            report = self.market_analyzer.analyze_category_competition(category_id, 'comprehensive')
+            
+            # Convert to JSON-serializable format
+            return {
+                "analysis_id": report.analysis_id,
+                "category": report.category,
+                "total_tools": report.total_tools,
+                "confidence_level": report.confidence_level,
+                "market_leaders": [
+                    {
+                        "tool_name": m.tool_name,
+                        "overall_score": m.overall_score,
+                        "feature_score": m.feature_score,
+                        "popularity_score": m.popularity_score,
+                        "innovation_score": m.innovation_score,
+                        "maturity_score": m.maturity_score
+                    } for m in report.market_leaders
+                ],
+                "key_insights": report.key_insights,
+                "recommendations": report.recommendations,
+                "trending_features": report.trending_features
+            }
+            
+        except Exception as e:
+            return {"error": str(e)}
+    
+    def track_trends(self, trend_type: str = 'features', days: int = 90) -> Dict:
+        """Track market trends"""
+        if not self.available:
+            return {"error": "Enhanced features not available"}
+        
+        try:
+            if trend_type == 'features':
+                trends = self.trend_tracker.track_feature_adoption_trends(days)
+            elif trend_type == 'pricing':
+                trends = self.trend_tracker.track_pricing_evolution(None, days)
+            elif trend_type == 'technology':
+                trends = self.trend_tracker.detect_technology_shifts(days)
+            else:
+                return {"error": "Invalid trend type"}
+            
+            # Convert to JSON-serializable format
+            return {
+                "trend_type": trend_type,
+                "analysis_period_days": days,
+                "trends_detected": len(trends),
+                "trends": [
+                    {
+                        "trend_name": t.trend_name,
+                        "direction": t.direction.value,
+                        "significance": t.significance.value,
+                        "strength": t.strength,
+                        "velocity": t.velocity,
+                        "duration_days": t.duration_days,
+                        "implications": t.implications[:3],
+                        "recommendations": t.recommendations[:3]
+                    } for t in trends[:10]  # Top 10 trends
+                ]
+            }
+            
+        except Exception as e:
+            return {"error": str(e)}
+    
+    def generate_forecast(self, category_id: int = None, horizon_days: int = 90) -> Dict:
+        """Generate market forecast"""
+        if not self.available:
+            return {"error": "Enhanced features not available"}
+        
+        try:
+            forecast = self.trend_tracker.generate_market_forecast(category_id, horizon_days)
+            
+            return {
+                "forecast_id": forecast.forecast_id,
+                "horizon_days": forecast.forecast_horizon_days,
+                "data_quality": forecast.data_quality,
+                "accuracy_estimate": forecast.forecast_accuracy_estimate,
+                "emerging_technologies": forecast.emerging_technologies,
+                "declining_technologies": forecast.declining_technologies,
+                "price_movements": forecast.price_movements,
+                "market_disruptions": forecast.market_disruptions
+            }
+            
+        except Exception as e:
+            return {"error": str(e)}
+    
+    def get_competitive_digest(self, hours: int = 24) -> Dict:
+        """Get competitive analysis digest"""
+        if not self.available:
+            return {"error": "Enhanced features not available"}
+        
+        try:
+            digest = self.competitive_integration.generate_competitive_digest(hours)
+            
+            return {
+                "digest_id": digest.digest_id,
+                "period_start": digest.period_start.isoformat(),
+                "period_end": digest.period_end.isoformat(),
+                "total_changes": digest.total_changes,
+                "new_trends": digest.new_trends,
+                "opportunities": digest.opportunities,
+                "threats": digest.threats,
+                "top_insights": [
+                    {
+                        "title": i.title,
+                        "description": i.description,
+                        "severity": i.severity,
+                        "confidence": i.confidence
+                    } for i in digest.top_insights[:5]
+                ],
+                "recommendations": digest.recommendations,
+                "data_quality_score": digest.data_quality_score
+            }
+            
+        except Exception as e:
+            return {"error": str(e)}
+
+# AWS Strands Agent Service
+class StrandsAgentService:
+    def __init__(self):
+        try:
+            # Import Strands Agents and all our custom tools
+            from strands_agents import Agent
+            from strands_agents.models import BedrockModel
+            # Import available tools - try different import patterns
+            try:
+                from strands_tools import http_request, python_repl
+                available_tools = [http_request, python_repl]
+            except ImportError:
+                try:
+                    from strands_tools import http_request, python_repl
+                    available_tools = [http_request, python_repl]
+                except ImportError:
+                    # Fallback to basic tools if specific ones aren't available
+                    available_tools = []
+            
+            # Configure Bedrock model (or use any other provider)
+            model = BedrockModel(
+                model_id="us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+                temperature=0.1,
+                streaming=False
+            )
+            
+            # Create agent with basic research tools (custom tools will be imported later)
+            self.agent = Agent(
+                model=model,
+                tools=available_tools,
+                system_prompt="""You are a comprehensive AI tool research specialist.
+                
+When researching a tool, you should:
+                1. Visit the provided URLs to gather information
+                2. Extract comprehensive data about the tool's features, capabilities, and use cases
+                3. Research the company behind the tool (funding, team size, strategic focus)
+                4. Find pricing information and subscription models
+                5. Identify integrations and SDLC phase alignment
+                6. Return structured JSON data
+                
+Always be thorough and cite sources when possible. If information is not available, clearly indicate uncertainty rather than making assumptions."""
+            )
+            self.available = True
+        except ImportError as e:
+            print(f"Warning: Strands Agents not available: {e}")
+            self.available = False
+    
+    def research_tool(self, tool: Tool) -> Dict:
+        """Research a tool using Strands Agent"""
+        if not self.available:
+            return {"error": "Strands Agents not available. Please install with: pip install strands-agents strands-tools"}
+        
+        prompt = self._build_research_prompt(tool)
+        
+        try:
+            # Use circuit breaker if available
+            if STABILITY_FEATURES_AVAILABLE:
+                @with_circuit_breaker('external_api')
+                def protected_research():
+                    return self.agent(prompt)
+                response = protected_research()
+            else:
+                response = self.agent(prompt)
+            
+            # Parse response as JSON if possible
+            result = self._parse_agent_response(response)
+            return result
+            
+        except Exception as e:
+            return {"error": str(e)}
+    
+    def _build_research_prompt(self, tool: Tool) -> str:
+        """Build research prompt for the agent"""
+        urls = [url for url in [tool.website_url, tool.github_url, tool.documentation_url, 
+                               tool.changelog_url, tool.blog_url] if url]
+        
+        return f"""
+        Research the AI development tool: {tool.name}
+        
+        Primary sources to investigate:
+        {chr(10).join(f"- {url}" for url in urls)}
+        
+        Use available tools to fetch content from these URLs and gather comprehensive information.
+        
+        Please research and provide:
+        
+        1. Tool Information:
+           - Detailed description and capabilities
+           - Primary features and use cases
+           - Target audience (developers, teams, enterprises)
+           - Integration capabilities
+           - SDLC phase alignment (rate 1-5 for: planning, design, development, testing, deployment, monitoring)
+           
+        2. Company Information:
+           - Company name and website
+           - Founding information and headquarters
+           - Team size and key executives
+           - Funding rounds and financial data
+           - Strategic focus and business model
+           - Main competitors
+           
+        3. Pricing and Availability:
+           - Pricing model (free, freemium, subscription, enterprise)
+           - Specific pricing tiers and monthly/annual costs
+           - Free tier limitations
+           - Enterprise features and custom pricing
+           
+        4. Technical Details:
+           - Open source status and license type
+           - Programming languages supported
+           - Platform compatibility (Windows, Mac, Linux, Web)
+           - API availability and documentation
+           - Integration options with other tools
+           
+        Format your final response as valid JSON with this structure:
+        {{
+            "tool": {{
+                "description": "detailed description",
+                "primary_use_cases": ["use case 1", "use case 2"],
+                "target_audience": ["developers", "teams", "enterprises"],
+                "license_type": "MIT|Commercial|etc",
+                "open_source": true/false,
+                "supported_platforms": ["Windows", "Mac", "Linux"],
+                "languages_supported": ["Python", "JavaScript"]
+            }},
+            "company": {{
+                "name": "Company Name",
+                "website": "https://company.com",
+                "founded_year": 2020,
+                "headquarters": "City, Country",
+                "employee_count": 50,
+                "employee_count_source": "LinkedIn|estimated",
+                "key_executives": [
+                    {{"name": "CEO Name", "role": "CEO", "background": "brief background"}}
+                ],
+                "funding_status": "Series A|public|etc",
+                "total_funding": 10000000,
+                "estimated_arr": 5000000,
+                "stock_symbol": "TICK",
+                "is_public": false,
+                "business_model": "subscription|freemium",
+                "strategic_focus": "AI development tools"
+            }},
+            "features": [
+                {{
+                    "feature_category": "IDE|testing|deployment",
+                    "feature_name": "Feature Name",
+                    "feature_description": "What it does",
+                    "is_core_feature": true
+                }}
+            ],
+            "integrations": [
+                {{
+                    "integration_type": "IDE|API|plugin",
+                    "integration_name": "VS Code",
+                    "integration_description": "Native extension available"
+                }}
+            ],
+            "sdlc_mappings": [
+                {{
+                    "sdlc_phase": "development",
+                    "relevance_score": 5,
+                    "phase_description": "Primary development tool"
+                }}
+            ],
+            "pricing": {{
+                "pricing_model": "freemium",
+                "free_tier_available": true,
+                "free_tier_limitations": ["limited API calls"],
+                "subscription_tiers": [
+                    {{
+                        "name": "Pro",
+                        "price_monthly": 29,
+                        "price_annual": 290,
+                        "features": ["unlimited API", "priority support"]
+                    }}
+                ]
+            }},
+            "confidence_score": 0.8
+        }}
+        """
+    
+    def _parse_agent_response(self, response: str) -> Dict:
+        """Parse the agent response"""
+        try:
+            # Look for JSON in the response
+            import re
+            json_match = re.search(r'\{.*\}', response, re.DOTALL)
+            if json_match:
+                return json.loads(json_match.group())
+            else:
+                return {"raw_response": response, "parsed": False}
+        except Exception as e:
+            return {"raw_response": response, "parsed": False, "parse_error": str(e)}
+
+# API Routes
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    return jsonify({
+        "status": "healthy", 
+        "timestamp": datetime.utcnow().isoformat(),
+        "version": "MVP"
+    })
+
+@app.route('/api/tools', methods=['GET'])
+def get_tools():
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 20, type=int)
+    category_id = request.args.get('category_id', type=int)
+    status = request.args.get('status')
+    
+    query = Tool.query
+    
+    if category_id:
+        query = query.filter_by(category_id=category_id)
+    if status:
+        query = query.filter_by(processing_status=status)
+    
+    tools = query.paginate(page=page, per_page=per_page, error_out=False)
+    
+    return jsonify({
+        'tools': [tool_to_dict(tool) for tool in tools.items],
+        'total': tools.total,
+        'pages': tools.pages,
+        'current_page': page
+    })
+
+@app.route('/api/tools', methods=['POST'])
+def create_tool():
+    data = request.json
+    
+    tool = Tool(
+        name=data['name'],
+        category_id=data.get('category_id'),
+        description=data.get('description'),
+        website_url=data.get('website_url'),
+        github_url=data.get('github_url'),
+        documentation_url=data.get('documentation_url'),
+        changelog_url=data.get('changelog_url'),
+        blog_url=data.get('blog_url'),
+        is_open_source=data.get('is_open_source', False),
+        pricing_model=data.get('pricing_model'),
+        processing_status='never_run'
+    )
+    
+    db.session.add(tool)
+    db.session.commit()
+    
+    return jsonify(tool_to_dict(tool)), 201
+
+@app.route('/api/tools/<int:tool_id>', methods=['GET'])
+def get_tool(tool_id):
+    tool = Tool.query.get_or_404(tool_id)
+    return jsonify(tool_to_dict(tool, include_relations=True))
+
+@app.route('/api/tools/<int:tool_id>', methods=['PUT'])
+def update_tool(tool_id):
+    tool = Tool.query.get_or_404(tool_id)
+    data = request.json
+    
+    # Update fields
+    for field in ['name', 'description', 'website_url', 'github_url', 
+                  'documentation_url', 'changelog_url', 'blog_url',
+                  'internal_notes', 'enterprise_position']:
+        if field in data:
+            setattr(tool, field, data[field])
+    
+    tool.updated_at = datetime.utcnow()
+    db.session.commit()
+    
+    return jsonify(tool_to_dict(tool))
+
+@app.route('/api/tools/<int:tool_id>/research', methods=['POST'])
+def research_tool(tool_id):
+    tool = Tool.query.get_or_404(tool_id)
+    
+    # Create research log
+    log = ResearchLog(
+        tool_id=tool_id,
+        research_type='full_research',
+        status='started'
+    )
+    db.session.add(log)
+    db.session.commit()
+    
+    # Update tool status
+    tool.processing_status = 'processing'
+    db.session.commit()
+    
+    try:
+        # Research using Strands Agent
+        agent_service = StrandsAgentService()
+        result = agent_service.research_tool(tool)
+        
+        if 'error' not in result:
+            # Update tool with research data
+            update_tool_from_research(tool, result)
+            
+            # Update log
+            log.status = 'completed'
+            log.data_collected = json.dumps(result)
+            log.completed_at = datetime.utcnow()
+            
+            # Update tool status
+            tool.processing_status = 'completed'
+            tool.last_processed_at = datetime.utcnow()
+            tool.next_process_date = datetime.utcnow() + timedelta(weeks=1)
+        else:
+            log.status = 'failed'
+            log.errors = result['error']
+            tool.processing_status = 'error'
+        
+        db.session.commit()
+        
+        return jsonify({
+            'status': log.status,
+            'tool': tool_to_dict(tool),
+            'research_data': result
+        })
+        
+    except Exception as e:
+        log.status = 'failed'
+        log.errors = str(e)
+        tool.processing_status = 'error'
+        db.session.commit()
+        
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/categories', methods=['GET'])
+def get_categories():
+    categories = Category.query.all()
+    return jsonify([category_to_dict(cat) for cat in categories])
+
+# Enhanced Competitive Intelligence API Endpoints
+
+@app.route('/api/tools/<int:tool_id>/curate', methods=['POST'])
+def curate_tool_data(tool_id):
+    """Enhanced curation with competitive analysis"""
+    enhanced_system = EnhancedSystemManager()
+    
+    if not enhanced_system.available:
+        # Fallback to basic research
+        return research_tool(tool_id)
+    
+    try:
+        result = enhanced_system.curate_tool_data(tool_id)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/categories/<int:category_id>/competitive-analysis', methods=['GET'])
+def analyze_category_competition(category_id):
+    """Get competitive analysis for a category"""
+    enhanced_system = EnhancedSystemManager()
+    
+    if not enhanced_system.available:
+        return jsonify({'error': 'Enhanced competitive analysis not available'}), 503
+    
+    try:
+        analysis = enhanced_system.analyze_competition(category_id)
+        return jsonify(analysis)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/market/trends', methods=['GET'])
+def get_market_trends():
+    """Get market trends analysis"""
+    trend_type = request.args.get('type', 'features')
+    days = request.args.get('days', 90, type=int)
+    
+    enhanced_system = EnhancedSystemManager()
+    
+    if not enhanced_system.available:
+        return jsonify({'error': 'Enhanced trend tracking not available'}), 503
+    
+    try:
+        trends = enhanced_system.track_trends(trend_type, days)
+        return jsonify(trends)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/market/forecast', methods=['GET'])
+def get_market_forecast():
+    """Get market forecast"""
+    category_id = request.args.get('category_id', type=int)
+    horizon_days = request.args.get('horizon_days', 90, type=int)
+    
+    enhanced_system = EnhancedSystemManager()
+    
+    if not enhanced_system.available:
+        return jsonify({'error': 'Enhanced forecasting not available'}), 503
+    
+    try:
+        forecast = enhanced_system.generate_forecast(category_id, horizon_days)
+        return jsonify(forecast)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/competitive/digest', methods=['GET'])
+def get_competitive_digest():
+    """Get competitive analysis digest"""
+    hours = request.args.get('hours', 24, type=int)
+    
+    enhanced_system = EnhancedSystemManager()
+    
+    if not enhanced_system.available:
+        return jsonify({'error': 'Enhanced competitive digest not available'}), 503
+    
+    try:
+        digest = enhanced_system.get_competitive_digest(hours)
+        return jsonify(digest)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/competitive/compare', methods=['POST'])
+def compare_tools():
+    """Compare multiple tools competitively"""
+    data = request.json
+    tool_ids = data.get('tool_ids', [])
+    comparison_type = data.get('type', 'comprehensive')
+    
+    if len(tool_ids) < 2:
+        return jsonify({'error': 'At least 2 tools required for comparison'}), 400
+    
+    enhanced_system = EnhancedSystemManager()
+    
+    if not enhanced_system.available:
+        return jsonify({'error': 'Enhanced tool comparison not available'}), 503
+    
+    try:
+        # Use market analyzer for tool comparison
+        comparison = enhanced_system.market_analyzer.compare_tools(tool_ids, comparison_type)
+        return jsonify(comparison)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/market/opportunities', methods=['GET'])
+def detect_market_opportunities():
+    """Detect market opportunities"""
+    category_id = request.args.get('category_id', type=int)
+    
+    enhanced_system = EnhancedSystemManager()
+    
+    if not enhanced_system.available:
+        return jsonify({'error': 'Enhanced opportunity detection not available'}), 503
+    
+    try:
+        opportunities = enhanced_system.market_analyzer.detect_market_opportunities(category_id)
+        return jsonify(opportunities)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/tools/<int:tool_id>/quality-score', methods=['GET'])
+def get_tool_quality_score(tool_id):
+    """Get data quality score for a tool"""
+    enhanced_system = EnhancedSystemManager()
+    
+    if not enhanced_system.available:
+        return jsonify({'error': 'Enhanced quality scoring not available'}), 503
+    
+    try:
+        score = enhanced_system.quality_scorer.calculate_tool_quality_score(tool_id)
+        return jsonify({'tool_id': tool_id, 'quality_score': score})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/system/status', methods=['GET'])
+def get_system_status():
+    """Get enhanced system status"""
+    status = {
+        'enhanced_features_available': ENHANCED_FEATURES_AVAILABLE,
+        'stability_features_available': STABILITY_FEATURES_AVAILABLE,
+        'components': {
+            'competitive_analysis': ENHANCED_FEATURES_AVAILABLE,
+            'trend_tracking': ENHANCED_FEATURES_AVAILABLE,
+            'data_curation': ENHANCED_FEATURES_AVAILABLE,
+            'quality_scoring': ENHANCED_FEATURES_AVAILABLE,
+            'alert_system': ENHANCED_FEATURES_AVAILABLE,
+            'error_handling': STABILITY_FEATURES_AVAILABLE,
+            'security_middleware': STABILITY_FEATURES_AVAILABLE,
+            'windows_stability': STABILITY_FEATURES_AVAILABLE
+        },
+        'timestamp': datetime.utcnow().isoformat()
+    }
+    
+    # Add system health if stability features are available
+    if STABILITY_FEATURES_AVAILABLE:
+        try:
+            status['system_health'] = get_system_health()
+            status['error_summary'] = error_handler.get_system_health()
+        except Exception as e:
+            status['health_error'] = str(e)
+    
+    return jsonify(status)
+
+@app.route('/api/system/health', methods=['GET'])
+def get_detailed_system_health():
+    """Get detailed system health information"""
+    if not STABILITY_FEATURES_AVAILABLE:
+        return jsonify({'error': 'Stability features not available'}), 503
+    
+    try:
+        health_data = {
+            'timestamp': datetime.utcnow().isoformat(),
+            'system_info': get_system_health(),
+            'error_tracking': error_handler.get_system_health(),
+            'uptime_seconds': time.time() - app.config.get('START_TIME', time.time())
+        }
+        return jsonify(health_data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+def tool_to_dict(tool, include_relations=False):
+    data = {
+        'id': tool.id,
+        'name': tool.name,
+        'category_id': tool.category_id,
+        'description': tool.description,
+        'website_url': tool.website_url,
+        'github_url': tool.github_url,
+        'documentation_url': tool.documentation_url,
+        'changelog_url': tool.changelog_url,
+        'blog_url': tool.blog_url,
+        'is_open_source': tool.is_open_source,
+        'license_type': tool.license_type,
+        'pricing_model': tool.pricing_model,
+        'starting_price': float(tool.starting_price) if tool.starting_price else None,
+        'processing_status': tool.processing_status,
+        'last_processed_at': tool.last_processed_at.isoformat() if tool.last_processed_at else None,
+        'internal_notes': tool.internal_notes,
+        'enterprise_position': tool.enterprise_position,
+        'created_at': tool.created_at.isoformat(),
+        'updated_at': tool.updated_at.isoformat()
+    }
+    
+    if include_relations:
+        data['category'] = category_to_dict(tool.category) if tool.category else None
+        data['company'] = company_to_dict(tool.company) if tool.company else None
+        data['features'] = [feature_to_dict(f) for f in tool.features]
+        data['integrations'] = [integration_to_dict(i) for i in tool.integrations]
+    
+    return data
+
+def category_to_dict(category):
+    return {
+        'id': category.id,
+        'name': category.name,
+        'parent_id': category.parent_id,
+        'description': category.description
+    }
+
+def company_to_dict(company):
+    return {
+        'id': company.id,
+        'name': company.name,
+        'website': company.website,
+        'founded_year': company.founded_year,
+        'headquarters': company.headquarters,
+        'stock_symbol': company.stock_symbol,
+        'is_public': company.is_public,
+        'estimated_arr': float(company.estimated_arr) if company.estimated_arr else None,
+        'employee_count': company.employee_count,
+        'strategic_focus': company.strategic_focus,
+        'business_model': company.business_model
+    }
+
+def feature_to_dict(feature):
+    return {
+        'id': feature.id,
+        'feature_category': feature.feature_category,
+        'feature_name': feature.feature_name,
+        'feature_description': feature.feature_description,
+        'is_core_feature': feature.is_core_feature
+    }
+
+def integration_to_dict(integration):
+    return {
+        'id': integration.id,
+        'integration_type': integration.integration_type,
+        'integration_name': integration.integration_name,
+        'integration_description': integration.integration_description,
+        'integration_url': integration.integration_url
+    }
+
+def validate_aws_setup():
+    """Validate AWS credentials and setup before starting the application"""
+    print("\n🔍 Validating AWS setup...")
+    
+    if not AWSCredentialValidator:
+        print("⚠️  AWS credential validator not available. Skipping validation.")
+        return True
+    
+    validator = AWSCredentialValidator(region=os.getenv('AWS_REGION', 'us-east-1'))
+    results = validator.validate_credentials()
+    
+    if not results["credentials_valid"]:
+        print("❌ AWS credentials validation failed!")
+        print("\n🛠️  Please fix AWS credentials before starting the application.")
+        print("💡 Run: python aws_credential_validator.py for detailed diagnostics")
+        print("📖 See AWS_SETUP.md for complete setup instructions")
+        return False
+        
+    if not results["bedrock_access"]:
+        print("❌ Bedrock access validation failed!")
+        print("💡 Ensure Bedrock is enabled in your AWS account")
+        return False
+        
+    if not results["claude_model_available"]:
+        print("❌ Claude 3.5 Sonnet not available!")
+        print("💡 Enable Claude 3.5 Sonnet in AWS Bedrock Console (us-east-1)")
+        return False
+    
+    print(f"✅ AWS credentials validated ({results['credential_source']})")
+    print(f"✅ Bedrock access confirmed in {results['region']}")
+    print(f"✅ Claude 3.5 Sonnet available")
+    print("🎉 AWS setup validation complete!")
+    return True
+
+def update_tool_from_research(tool, research_data):
+    """Update tool with data from research"""
+    if 'tool' in research_data:
+        tool_data = research_data['tool']
+        tool.description = tool_data.get('description', tool.description)
+        tool.license_type = tool_data.get('license_type')
+        tool.primary_language = tool_data.get('languages_supported', [None])[0]
+        if tool_data.get('supported_platforms'):
+            tool.supported_platforms = json.dumps(tool_data['supported_platforms'])
+    
+    # Update or create company
+    if 'company' in research_data:
+        company_data = research_data['company']
+        if not tool.company:
+            tool.company = Company(tool_id=tool.id)
+        
+        company = tool.company
+        company.name = company_data.get('name', company.name)
+        company.website = company_data.get('website', company.website)
+        company.founded_year = company_data.get('founded_year')
+        company.headquarters = company_data.get('headquarters')
+        company.employee_count = company_data.get('employee_count')
+        company.employee_count_source = company_data.get('employee_count_source')
+        company.estimated_arr = company_data.get('estimated_arr')
+        company.total_funding = company_data.get('total_funding')
+        company.stock_symbol = company_data.get('stock_symbol')
+        company.is_public = company_data.get('is_public', False)
+        company.business_model = company_data.get('business_model')
+        company.strategic_focus = company_data.get('strategic_focus')
+        
+        if company_data.get('key_executives'):
+            company.key_executives = json.dumps(company_data['key_executives'])
+    
+    # Update features
+    if 'features' in research_data:
+        # Clear existing features
+        ToolFeature.query.filter_by(tool_id=tool.id).delete()
+        
+        for feature in research_data['features']:
+            new_feature = ToolFeature(
+                tool_id=tool.id,
+                feature_category=feature.get('feature_category'),
+                feature_name=feature.get('feature_name'),
+                feature_description=feature.get('feature_description'),
+                is_core_feature=feature.get('is_core_feature', True)
+            )
+            db.session.add(new_feature)
+    
+    # Update integrations
+    if 'integrations' in research_data:
+        # Clear existing integrations
+        ToolIntegration.query.filter_by(tool_id=tool.id).delete()
+        
+        for integration in research_data['integrations']:
+            new_integration = ToolIntegration(
+                tool_id=tool.id,
+                integration_type=integration.get('integration_type'),
+                integration_name=integration.get('integration_name'),
+                integration_description=integration.get('integration_description')
+            )
+            db.session.add(new_integration)
+    
+    # Update SDLC mappings
+    if 'sdlc_mappings' in research_data:
+        # Clear existing mappings
+        SDLCMapping.query.filter_by(tool_id=tool.id).delete()
+        
+        for mapping in research_data['sdlc_mappings']:
+            new_mapping = SDLCMapping(
+                tool_id=tool.id,
+                sdlc_phase=mapping.get('sdlc_phase'),
+                relevance_score=mapping.get('relevance_score'),
+                phase_description=mapping.get('phase_description')
+            )
+            db.session.add(new_mapping)
+    
+    # Update pricing information
+    if 'pricing' in research_data:
+        pricing_data = research_data['pricing']
+        tool.pricing_model = pricing_data.get('pricing_model')
+        tool.free_tier_available = pricing_data.get('free_tier_available', False)
+        tool.pricing_details = json.dumps(pricing_data)
+        
+        # Extract starting price if available
+        if pricing_data.get('subscription_tiers'):
+            paid_tiers = [tier for tier in pricing_data['subscription_tiers'] 
+                         if tier.get('price_monthly', 0) > 0]
+            if paid_tiers:
+                tool.starting_price = min(tier['price_monthly'] for tier in paid_tiers)
+
+if __name__ == '__main__':
+    # Record startup time
+    app.config['START_TIME'] = time.time()
+    
+    # Validate AWS setup before starting
+    print("🚀 Starting AI Tool Intelligence Platform")
+    
+    # Initialize Windows stability features if available
+    if STABILITY_FEATURES_AVAILABLE:
+        print("🔄 Initializing Windows stability features...")
+        try:
+            # Setup Windows-specific optimizations and paths
+            optimized_config = setup_windows_stability({
+                'log_dir': 'logs',
+                'backup_dir': 'backups',
+                'data_dir': 'data',
+                'temp_dir': 'temp'
+            })
+            
+            # Run startup validation
+            if not run_startup_validation():
+                print("⚠️  Some startup checks failed, but continuing...")
+            else:
+                print("✅ All startup validation checks passed")
+            
+            print("✅ Windows stability features initialized")
+        except Exception as e:
+            print(f"⚠️  Warning: Windows stability initialization failed: {e}")
+    
+    # Skip AWS validation in development mode if SKIP_AWS_VALIDATION is set
+    if not os.getenv('SKIP_AWS_VALIDATION'):
+        if not validate_aws_setup():
+            print("\n❌ AWS validation failed. Application cannot start.")
+            print("💡 To skip AWS validation for development, set: SKIP_AWS_VALIDATION=1")
+            sys.exit(1)
+    else:
+        print("⚠️  Skipping AWS validation (SKIP_AWS_VALIDATION=1)")
+    
+    # Initialize database
+    with app.app_context():
+        db.create_all()
+        
+        # Initialize enhanced schema if available
+        if ENHANCED_FEATURES_AVAILABLE:
+            try:
+                print("🔄 Initializing enhanced competitive intelligence schema...")
+                # Import and run migrations
+                from migrations.migrate_to_enhanced_schema import run_migration
+                run_migration()
+                print("✅ Enhanced schema initialized")
+                
+                # Initialize enhanced system
+                enhanced_system = EnhancedSystemManager()
+                if enhanced_system.available:
+                    print("✅ Enhanced competitive intelligence system ready")
+                    
+                    # Start real-time monitoring (optional)
+                    if os.getenv('ENABLE_REAL_TIME_MONITORING', 'false').lower() == 'true':
+                        enhanced_system.competitive_integration.start_real_time_monitoring()
+                        print("🔍 Real-time competitive monitoring started")
+                
+                # Initialize logging and monitoring system
+                if get_logger and get_monitoring_dashboard:
+                    try:
+                        print("🔄 Initializing comprehensive logging and monitoring...")
+                        
+                        # Initialize global logger
+                        logger = get_logger()
+                        logger.info(
+                            LogCategory.SYSTEM, 'application',
+                            "AI Tool Intelligence Platform starting up"
+                        )
+                        
+                        # Initialize monitoring dashboard
+                        dashboard = get_monitoring_dashboard()
+                        
+                        # Start monitoring if enabled
+                        if os.getenv('ENABLE_MONITORING', 'true').lower() == 'true':
+                            monitoring_interval = int(os.getenv('MONITORING_INTERVAL_SECONDS', '60'))
+                            dashboard.start_monitoring(monitoring_interval)
+                            print(f"📊 Real-time monitoring started (interval: {monitoring_interval}s)")
+                        
+                        print("✅ Logging and monitoring system initialized")
+                        
+                    except Exception as e:
+                        print(f"⚠️  Warning: Logging and monitoring initialization failed: {e}")
+                        print("📝 Application will continue without enhanced monitoring")
+                
+            except Exception as e:
+                print(f"⚠️  Enhanced features initialization failed: {e}")
+                print("📝 Application will continue with basic features only")
+        
+        # Add sample data if database is empty
+        if Category.query.count() == 0:
+            sample_categories = [
+                ('AI Developer Tools', None, 'All AI-powered developer tools'),
+                ('IDEs & Editors', 1, 'Integrated Development Environments and code editors'),
+                ('Agentic IDEs', 2, 'AI-powered IDEs that can act autonomously'),
+                ('Code Assistants', 2, 'AI coding assistants and copilots'),
+                ('Testing Tools', 1, 'AI-powered testing and QA tools'),
+                ('Frameworks & Libraries', 1, 'Development frameworks and libraries'),
+                ('Agent Frameworks', 6, 'Frameworks for building AI agents'),
+                ('Context Tools', 1, 'Tools for managing context and knowledge'),
+                ('Desktop Tools', 1, 'Desktop applications for developers'),
+                ('Deployment & DevOps', 1, 'AI tools for deployment and operations')
+            ]
+            
+            for name, parent_id, description in sample_categories:
+                category = Category(name=name, parent_id=parent_id, description=description)
+                db.session.add(category)
+            
+            # Add sample tools
+            sample_tools = [
+                ('Cursor', 3, 'AI-first code editor built for pair-programming with AI', 'https://cursor.sh', False, 'freemium'),
+                ('Claude Code', 4, 'Agentic command line tool by Anthropic', 'https://claude.ai', False, 'subscription'),
+                ('GitHub Copilot', 4, 'AI pair programmer by GitHub', 'https://github.com/features/copilot', False, 'subscription'),
+                ('Tabnine', 4, 'AI code completion assistant', 'https://tabnine.com', False, 'freemium'),
+                ('Codeium', 4, 'Free AI-powered code acceleration toolkit', 'https://codeium.com', True, 'freemium')
+            ]
+            
+            for name, category_id, description, website_url, is_open_source, pricing_model in sample_tools:
+                tool = Tool(
+                    name=name,
+                    category_id=category_id,
+                    description=description,
+                    website_url=website_url,
+                    is_open_source=is_open_source,
+                    pricing_model=pricing_model,
+                    processing_status='never_run'
+                )
+                db.session.add(tool)
+            
+            db.session.commit()
+            print("✅ Sample data added to database")
+    
+    # Register graceful shutdown if stability features are available
+    if STABILITY_FEATURES_AVAILABLE:
+        try:
+            # Register Flask app shutdown
+            def shutdown_flask():
+                print("🔄 Shutting down Flask application...")
+            
+            windows_stability.register_shutdown_callback(shutdown_flask, "Flask Application")
+            
+            # Register database cleanup
+            def cleanup_database():
+                try:
+                    db.session.close()
+                    print("✅ Database connections closed")
+                except:
+                    pass
+            
+            windows_stability.register_cleanup_task(cleanup_database, "Database Cleanup")
+            
+        except Exception as e:
+            print(f"⚠️  Warning: Could not register shutdown callbacks: {e}")
+    
+    # Start Flask development server
+    print("🚀 Starting AI Tool Intelligence Platform")
+    print("Frontend: http://localhost:3000")
+    print("Backend API: http://localhost:5000")
+    print("Health Check: http://localhost:5000/api/health")
+    if STABILITY_FEATURES_AVAILABLE:
+        print("System Health: http://localhost:5000/api/system/health")
+    print("\n✅ Application ready for requests")
+    
+    try:
+        app.run(debug=True, host='0.0.0.0', port=5000)
+    except KeyboardInterrupt:
+        if STABILITY_FEATURES_AVAILABLE:
+            print("\n🔄 Initiating graceful shutdown...")
+            windows_stability.graceful_shutdown()
+        else:
+            print("\n👋 Application stopped")
+    except Exception as e:
+        if STABILITY_FEATURES_AVAILABLE:
+            # Create crash report
+            crash_file = windows_stability.create_crash_report(e, {
+                'component': 'Flask Application',
+                'stage': 'Runtime'
+            })
+            print(f"\n❌ Application crashed. Report saved: {crash_file}")
+        else:
+            print(f"\n❌ Application crashed: {e}")
+        raise

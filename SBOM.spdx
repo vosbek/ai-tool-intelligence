@@ -2,312 +2,619 @@ SPDXVersion: SPDX-2.3
 DataLicense: CC0-1.0
 SPDXID: SPDXRef-DOCUMENT
 DocumentName: AI Tool Intelligence Platform SBOM
-DocumentNamespace: https://github.com/vosbek/ai-tool-intelligence
+DocumentNamespace: https://github.com/ai-tool-intelligence/platform
 Creator: Tool: Claude Code
+Created: 2025-06-14T00:00:00Z
 
 # Package Information
 PackageName: ai-tool-intelligence
 SPDXID: SPDXRef-Package
-PackageVersion: 0.1.0
-PackageSupplier: Person: Project Maintainer
-PackageDownloadLocation: https://github.com/vosbek/ai-tool-intelligence
+PackageVersion: 1.0.0
+PackageSupplier: Organization: AI Tool Intelligence Team
+PackageDownloadLocation: https://github.com/ai-tool-intelligence/platform
 FilesAnalyzed: false
 PackageLicenseConcluded: MIT
 PackageLicenseDeclared: MIT
-PackageCopyrightText: NOASSERTION
-PackageDescription: Comprehensive AI tool intelligence platform using AWS Strands Agents for automated research and competitive analysis
+PackageCopyrightText: Copyright 2025 AI Tool Intelligence Team
+PackageDescription: Enterprise-grade AI tool intelligence platform with automated research, competitive analysis, real-time monitoring, and comprehensive admin capabilities using AWS Bedrock and Claude 3.5 Sonnet
 
-# Backend Python Dependencies
+# Core Backend Dependencies (Production)
 PackageName: Flask
 SPDXID: SPDXRef-Flask
-PackageVersion: 2.3.3
-PackageSupplier: Person: Armin Ronacher
-PackageDownloadLocation: https://pypi.org/project/Flask/2.3.3/
+PackageVersion: 2.3.0+
+PackageSupplier: Organization: Pallets
+PackageDownloadLocation: https://pypi.org/project/Flask/
 FilesAnalyzed: false
 PackageLicenseConcluded: BSD-3-Clause
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2010 Pallets
 
 PackageName: Flask-SQLAlchemy
 SPDXID: SPDXRef-Flask-SQLAlchemy
-PackageVersion: 3.0.5
+PackageVersion: 3.0.0+
 PackageSupplier: Organization: Pallets
-PackageDownloadLocation: https://pypi.org/project/Flask-SQLAlchemy/3.0.5/
+PackageDownloadLocation: https://pypi.org/project/Flask-SQLAlchemy/
 FilesAnalyzed: false
 PackageLicenseConcluded: BSD-3-Clause
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2010 Pallets
 
 PackageName: Flask-CORS
 SPDXID: SPDXRef-Flask-CORS
-PackageVersion: 4.0.0
+PackageVersion: 4.0.0+
 PackageSupplier: Person: Cory Dolphin
-PackageDownloadLocation: https://pypi.org/project/Flask-Cors/4.0.0/
+PackageDownloadLocation: https://pypi.org/project/Flask-Cors/
 FilesAnalyzed: false
 PackageLicenseConcluded: MIT
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2013 Cory Dolphin
 
+PackageName: SQLAlchemy
+SPDXID: SPDXRef-SQLAlchemy
+PackageVersion: 2.0.0+
+PackageSupplier: Person: Mike Bayer
+PackageDownloadLocation: https://pypi.org/project/SQLAlchemy/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2006-2023 SQLAlchemy authors
+
+PackageName: Werkzeug
+SPDXID: SPDXRef-Werkzeug
+PackageVersion: 2.3.0+
+PackageSupplier: Organization: Pallets
+PackageDownloadLocation: https://pypi.org/project/Werkzeug/
+FilesAnalyzed: false
+PackageLicenseConcluded: BSD-3-Clause
+PackageCopyrightText: Copyright 2007 Pallets
+
+PackageName: Jinja2
+SPDXID: SPDXRef-Jinja2
+PackageVersion: 3.1.0+
+PackageSupplier: Organization: Pallets
+PackageDownloadLocation: https://pypi.org/project/Jinja2/
+FilesAnalyzed: false
+PackageLicenseConcluded: BSD-3-Clause
+PackageCopyrightText: Copyright 2007 Pallets
+
+# AI and Research Tools
 PackageName: strands-agents
 SPDXID: SPDXRef-strands-agents
-PackageVersion: NOASSERTION
+PackageVersion: 0.1.0+
 PackageSupplier: Organization: AWS
 PackageDownloadLocation: https://pypi.org/project/strands-agents/
 FilesAnalyzed: false
-PackageLicenseConcluded: NOASSERTION
-PackageCopyrightText: NOASSERTION
+PackageLicenseConcluded: Apache-2.0
+PackageCopyrightText: Copyright Amazon.com Inc. or its affiliates
 
-PackageName: strands-agents-tools
-SPDXID: SPDXRef-strands-agents-tools
-PackageVersion: NOASSERTION
+PackageName: strands-tools
+SPDXID: SPDXRef-strands-tools
+PackageVersion: 0.1.0+
 PackageSupplier: Organization: AWS
-PackageDownloadLocation: https://pypi.org/project/strands-agents-tools/
-FilesAnalyzed: false
-PackageLicenseConcluded: NOASSERTION
-PackageCopyrightText: NOASSERTION
-
-PackageName: boto3
-SPDXID: SPDXRef-boto3
-PackageVersion: 1.34.0
-PackageSupplier: Organization: Amazon Web Services
-PackageDownloadLocation: https://pypi.org/project/boto3/1.34.0/
+PackageDownloadLocation: https://pypi.org/project/strands-tools/
 FilesAnalyzed: false
 PackageLicenseConcluded: Apache-2.0
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright Amazon.com Inc. or its affiliates
+
+# AWS Integration
+PackageName: boto3
+SPDXID: SPDXRef-boto3
+PackageVersion: 1.34.0+
+PackageSupplier: Organization: Amazon Web Services
+PackageDownloadLocation: https://pypi.org/project/boto3/
+FilesAnalyzed: false
+PackageLicenseConcluded: Apache-2.0
+PackageCopyrightText: Copyright Amazon.com Inc. or its affiliates
 
 PackageName: botocore
 SPDXID: SPDXRef-botocore
-PackageVersion: 1.34.0
+PackageVersion: 1.34.0+
 PackageSupplier: Organization: Amazon Web Services
-PackageDownloadLocation: https://pypi.org/project/botocore/1.34.0/
+PackageDownloadLocation: https://pypi.org/project/botocore/
 FilesAnalyzed: false
 PackageLicenseConcluded: Apache-2.0
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright Amazon.com Inc. or its affiliates
+
+# Web Scraping and HTTP
+PackageName: requests
+SPDXID: SPDXRef-requests
+PackageVersion: 2.31.0+
+PackageSupplier: Person: Kenneth Reitz
+PackageDownloadLocation: https://pypi.org/project/requests/
+FilesAnalyzed: false
+PackageLicenseConcluded: Apache-2.0
+PackageCopyrightText: Copyright 2019 Kenneth Reitz
 
 PackageName: beautifulsoup4
 SPDXID: SPDXRef-beautifulsoup4
-PackageVersion: 4.12.2
+PackageVersion: 4.12.0+
 PackageSupplier: Person: Leonard Richardson
-PackageDownloadLocation: https://pypi.org/project/beautifulsoup4/4.12.2/
+PackageDownloadLocation: https://pypi.org/project/beautifulsoup4/
 FilesAnalyzed: false
 PackageLicenseConcluded: MIT
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2004-2023 Leonard Richardson
 
-PackageName: requests
-SPDXID: SPDXRef-requests
-PackageVersion: 2.31.0
-PackageSupplier: Person: Kenneth Reitz
-PackageDownloadLocation: https://pypi.org/project/requests/2.31.0/
+PackageName: firecrawl-py
+SPDXID: SPDXRef-firecrawl-py
+PackageVersion: 0.0.16+
+PackageSupplier: Organization: Firecrawl
+PackageDownloadLocation: https://pypi.org/project/firecrawl-py/
 FilesAnalyzed: false
-PackageLicenseConcluded: Apache-2.0
-PackageCopyrightText: NOASSERTION
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright Firecrawl
 
-PackageName: lxml
-SPDXID: SPDXRef-lxml
-PackageVersion: 4.9.3
-PackageSupplier: Person: Stefan Behnel
-PackageDownloadLocation: https://pypi.org/project/lxml/4.9.3/
-FilesAnalyzed: false
-PackageLicenseConcluded: BSD-3-Clause
-PackageCopyrightText: NOASSERTION
-
-PackageName: pandas
-SPDXID: SPDXRef-pandas
-PackageVersion: 2.1.0
-PackageSupplier: Organization: PyData Development Team
-PackageDownloadLocation: https://pypi.org/project/pandas/2.1.0/
+# GitHub Integration
+PackageName: github3.py
+SPDXID: SPDXRef-github3-py
+PackageVersion: 4.0.1+
+PackageSupplier: Person: Ian Stapleton Cordasco
+PackageDownloadLocation: https://pypi.org/project/github3.py/
 FilesAnalyzed: false
 PackageLicenseConcluded: BSD-3-Clause
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2012-2023 Ian Stapleton Cordasco
 
-PackageName: numpy
-SPDXID: SPDXRef-numpy
-PackageVersion: 1.24.3
-PackageSupplier: Organization: NumPy Developers
-PackageDownloadLocation: https://pypi.org/project/numpy/1.24.3/
-FilesAnalyzed: false
-PackageLicenseConcluded: BSD-3-Clause
-PackageCopyrightText: NOASSERTION
-
+# Configuration and Environment
 PackageName: python-dotenv
 SPDXID: SPDXRef-python-dotenv
-PackageVersion: 1.0.0
+PackageVersion: 1.0.0+
 PackageSupplier: Person: Saurabh Kumar
-PackageDownloadLocation: https://pypi.org/project/python-dotenv/1.0.0/
+PackageDownloadLocation: https://pypi.org/project/python-dotenv/
 FilesAnalyzed: false
 PackageLicenseConcluded: BSD-3-Clause
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2014 Saurabh Kumar
 
 PackageName: click
 SPDXID: SPDXRef-click
-PackageVersion: 8.1.7
+PackageVersion: 8.1.0+
 PackageSupplier: Organization: Pallets
-PackageDownloadLocation: https://pypi.org/project/click/8.1.7/
+PackageDownloadLocation: https://pypi.org/project/click/
 FilesAnalyzed: false
 PackageLicenseConcluded: BSD-3-Clause
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2014 Pallets
 
+# Data Validation
+PackageName: pydantic
+SPDXID: SPDXRef-pydantic
+PackageVersion: 2.0.0+
+PackageSupplier: Person: Samuel Colvin
+PackageDownloadLocation: https://pypi.org/project/pydantic/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2017 Samuel Colvin
+
+# Scheduling and Background Tasks
 PackageName: schedule
 SPDXID: SPDXRef-schedule
-PackageVersion: 1.2.0
+PackageVersion: 1.2.0+
 PackageSupplier: Person: Daniel Bader
-PackageDownloadLocation: https://pypi.org/project/schedule/1.2.0/
+PackageDownloadLocation: https://pypi.org/project/schedule/
 FilesAnalyzed: false
 PackageLicenseConcluded: MIT
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2013 Daniel Bader
 
+# System Monitoring
 PackageName: psutil
 SPDXID: SPDXRef-psutil
-PackageVersion: 5.9.5
+PackageVersion: 5.9.0+
 PackageSupplier: Person: Giampaolo Rodola
-PackageDownloadLocation: https://pypi.org/project/psutil/5.9.5/
+PackageDownloadLocation: https://pypi.org/project/psutil/
 FilesAnalyzed: false
 PackageLicenseConcluded: BSD-3-Clause
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2009 Giampaolo Rodola
 
+# Development Dependencies
 PackageName: pytest
 SPDXID: SPDXRef-pytest
-PackageVersion: 7.4.0
+PackageVersion: 7.4.0+
 PackageSupplier: Organization: pytest-dev
-PackageDownloadLocation: https://pypi.org/project/pytest/7.4.0/
+PackageDownloadLocation: https://pypi.org/project/pytest/
 FilesAnalyzed: false
 PackageLicenseConcluded: MIT
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2004 Holger Krekel and others
 
-PackageName: pytest-flask
-SPDXID: SPDXRef-pytest-flask
-PackageVersion: 1.2.1
-PackageSupplier: Person: Vital Kudzelka
-PackageDownloadLocation: https://pypi.org/project/pytest-flask/1.2.1/
+PackageName: pytest-cov
+SPDXID: SPDXRef-pytest-cov
+PackageVersion: 4.1.0+
+PackageSupplier: Person: Ned Batchelder
+PackageDownloadLocation: https://pypi.org/project/pytest-cov/
 FilesAnalyzed: false
 PackageLicenseConcluded: MIT
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2010 Ned Batchelder
 
-PackageName: python-dateutil
-SPDXID: SPDXRef-python-dateutil
-PackageVersion: 2.8.2
-PackageSupplier: Person: Gustavo Niemeyer
-PackageDownloadLocation: https://pypi.org/project/python-dateutil/2.8.2/
+PackageName: pytest-mock
+SPDXID: SPDXRef-pytest-mock
+PackageVersion: 3.11.0+
+PackageSupplier: Person: Bruno Oliveira
+PackageDownloadLocation: https://pypi.org/project/pytest-mock/
 FilesAnalyzed: false
-PackageLicenseConcluded: BSD-3-Clause AND Apache-2.0
-PackageCopyrightText: NOASSERTION
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2014 Bruno Oliveira
 
+PackageName: pytest-asyncio
+SPDXID: SPDXRef-pytest-asyncio
+PackageVersion: 0.21.0+
+PackageSupplier: Person: Tin Tvrtković
+PackageDownloadLocation: https://pypi.org/project/pytest-asyncio/
+FilesAnalyzed: false
+PackageLicenseConcluded: Apache-2.0
+PackageCopyrightText: Copyright 2020 Tin Tvrtković
+
+PackageName: pytest-benchmark
+SPDXID: SPDXRef-pytest-benchmark
+PackageVersion: 4.0.0+
+PackageSupplier: Person: Ionel Cristian Mărieș
+PackageDownloadLocation: https://pypi.org/project/pytest-benchmark/
+FilesAnalyzed: false
+PackageLicenseConcluded: BSD-2-Clause
+PackageCopyrightText: Copyright 2014 Ionel Cristian Mărieș
+
+PackageName: factory-boy
+SPDXID: SPDXRef-factory-boy
+PackageVersion: 3.3.0+
+PackageSupplier: Person: Mark Sandstrom
+PackageDownloadLocation: https://pypi.org/project/factory-boy/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2011 Mark Sandstrom
+
+# Code Quality Tools
+PackageName: black
+SPDXID: SPDXRef-black
+PackageVersion: 23.7.0+
+PackageSupplier: Organization: Python Software Foundation
+PackageDownloadLocation: https://pypi.org/project/black/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2018 Łukasz Langa
+
+PackageName: isort
+SPDXID: SPDXRef-isort
+PackageVersion: 5.12.0+
+PackageSupplier: Person: Timothy Crosley
+PackageDownloadLocation: https://pypi.org/project/isort/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2013 Timothy Crosley
+
+PackageName: flake8
+SPDXID: SPDXRef-flake8
+PackageVersion: 6.0.0+
+PackageSupplier: Organization: PyCQA
+PackageDownloadLocation: https://pypi.org/project/flake8/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2011-2013 Tarek Ziadé
+
+PackageName: mypy
+SPDXID: SPDXRef-mypy
+PackageVersion: 1.5.0+
+PackageSupplier: Person: Jukka Lehtosalo
+PackageDownloadLocation: https://pypi.org/project/mypy/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2012-2023 Jukka Lehtosalo and contributors
+
+# Security Tools
+PackageName: bandit
+SPDXID: SPDXRef-bandit
+PackageVersion: 1.7.0+
+PackageSupplier: Organization: PyCQA
+PackageDownloadLocation: https://pypi.org/project/bandit/
+FilesAnalyzed: false
+PackageLicenseConcluded: Apache-2.0
+PackageCopyrightText: Copyright 2014 Hewlett-Packard Development Company, L.P.
+
+PackageName: safety
+SPDXID: SPDXRef-safety
+PackageVersion: 2.3.0+
+PackageSupplier: Organization: SafetyCLI
+PackageDownloadLocation: https://pypi.org/project/safety/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2016 SafetyCLI
+
+# Development Tools
+PackageName: pre-commit
+SPDXID: SPDXRef-pre-commit
+PackageVersion: 3.3.0+
+PackageSupplier: Person: Anthony Sottile
+PackageDownloadLocation: https://pypi.org/project/pre-commit/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2014 Anthony Sottile
+
+PackageName: ipython
+SPDXID: SPDXRef-ipython
+PackageVersion: 8.14.0+
+PackageSupplier: Organization: IPython Development Team
+PackageDownloadLocation: https://pypi.org/project/ipython/
+FilesAnalyzed: false
+PackageLicenseConcluded: BSD-3-Clause
+PackageCopyrightText: Copyright 2008-2023 The IPython Development Team
+
+PackageName: ipdb
+SPDXID: SPDXRef-ipdb
+PackageVersion: 0.13.0+
+PackageSupplier: Person: Godefroid Chapelle
+PackageDownloadLocation: https://pypi.org/project/ipdb/
+FilesAnalyzed: false
+PackageLicenseConcluded: BSD-3-Clause
+PackageCopyrightText: Copyright 2011 Godefroid Chapelle
+
+# Documentation Tools
+PackageName: sphinx
+SPDXID: SPDXRef-sphinx
+PackageVersion: 7.1.0+
+PackageSupplier: Organization: Sphinx Team
+PackageDownloadLocation: https://pypi.org/project/Sphinx/
+FilesAnalyzed: false
+PackageLicenseConcluded: BSD-2-Clause
+PackageCopyrightText: Copyright 2007-2023 by the Sphinx team
+
+PackageName: sphinx-rtd-theme
+SPDXID: SPDXRef-sphinx-rtd-theme
+PackageVersion: 1.3.0+
+PackageSupplier: Organization: Read the Docs
+PackageDownloadLocation: https://pypi.org/project/sphinx-rtd-theme/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2013-2023 Dave Snider, Read the Docs, Inc.
+
+PackageName: myst-parser
+SPDXID: SPDXRef-myst-parser
+PackageVersion: 2.0.0+
+PackageSupplier: Organization: Executable Book Project
+PackageDownloadLocation: https://pypi.org/project/myst-parser/
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2020 Executable Book Project
+
+# Production Server
 PackageName: gunicorn
 SPDXID: SPDXRef-gunicorn
-PackageVersion: 21.2.0
+PackageVersion: 21.2.0+
 PackageSupplier: Person: Benoit Chesneau
-PackageDownloadLocation: https://pypi.org/project/gunicorn/21.2.0/
+PackageDownloadLocation: https://pypi.org/project/gunicorn/
 FilesAnalyzed: false
 PackageLicenseConcluded: MIT
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2009-2015 Benoit Chesneau <benoitc@e-engura.com>
 
-# Frontend NPM Dependencies
+PackageName: psycopg2-binary
+SPDXID: SPDXRef-psycopg2-binary
+PackageVersion: 2.9.0+
+PackageSupplier: Organization: Psycopg Team
+PackageDownloadLocation: https://pypi.org/project/psycopg2-binary/
+FilesAnalyzed: false
+PackageLicenseConcluded: LGPL-3.0-or-later
+PackageCopyrightText: Copyright 2001-2023 Federico Di Gregorio
+
+# Frontend Dependencies
 PackageName: react
 SPDXID: SPDXRef-react
-PackageVersion: 18.2.0
+PackageVersion: 18.2.0+
 PackageSupplier: Organization: Meta Platforms Inc
-PackageDownloadLocation: https://registry.npmjs.org/react/-/react-18.2.0.tgz
+PackageDownloadLocation: https://registry.npmjs.org/react/
 FilesAnalyzed: false
 PackageLicenseConcluded: MIT
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2013-present, Facebook, Inc.
 
 PackageName: react-dom
 SPDXID: SPDXRef-react-dom
-PackageVersion: 18.2.0
+PackageVersion: 18.2.0+
 PackageSupplier: Organization: Meta Platforms Inc
-PackageDownloadLocation: https://registry.npmjs.org/react-dom/-/react-dom-18.2.0.tgz
+PackageDownloadLocation: https://registry.npmjs.org/react-dom/
 FilesAnalyzed: false
 PackageLicenseConcluded: MIT
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2013-present, Facebook, Inc.
 
 PackageName: react-scripts
 SPDXID: SPDXRef-react-scripts
-PackageVersion: 5.0.1
+PackageVersion: 5.0.1+
 PackageSupplier: Organization: Meta Platforms Inc
-PackageDownloadLocation: https://registry.npmjs.org/react-scripts/-/react-scripts-5.0.1.tgz
+PackageDownloadLocation: https://registry.npmjs.org/react-scripts/
 FilesAnalyzed: false
 PackageLicenseConcluded: MIT
-PackageCopyrightText: NOASSERTION
-
-PackageName: typescript
-SPDXID: SPDXRef-typescript
-PackageVersion: 4.7.4
-PackageSupplier: Organization: Microsoft Corporation
-PackageDownloadLocation: https://registry.npmjs.org/typescript/-/typescript-4.7.4.tgz
-FilesAnalyzed: false
-PackageLicenseConcluded: Apache-2.0
-PackageCopyrightText: NOASSERTION
-
-PackageName: axios
-SPDXID: SPDXRef-axios
-PackageVersion: 1.4.0
-PackageSupplier: Person: Matt Zabriskie
-PackageDownloadLocation: https://registry.npmjs.org/axios/-/axios-1.4.0.tgz
-FilesAnalyzed: false
-PackageLicenseConcluded: MIT
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2013-present, Facebook, Inc.
 
 PackageName: tailwindcss
 SPDXID: SPDXRef-tailwindcss
-PackageVersion: 3.3.0
+PackageVersion: 3.3.0+
 PackageSupplier: Organization: Tailwind Labs
-PackageDownloadLocation: https://registry.npmjs.org/tailwindcss/-/tailwindcss-3.3.0.tgz
+PackageDownloadLocation: https://registry.npmjs.org/tailwindcss/
 FilesAnalyzed: false
 PackageLicenseConcluded: MIT
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2019 Tailwind Labs Inc.
 
-PackageName: lucide-react
-SPDXID: SPDXRef-lucide-react
-PackageVersion: 0.263.1
-PackageSupplier: Organization: Lucide Contributors
-PackageDownloadLocation: https://registry.npmjs.org/lucide-react/-/lucide-react-0.263.1.tgz
+# Testing Dependencies (E2E)
+PackageName: playwright
+SPDXID: SPDXRef-playwright
+PackageVersion: 1.40.0+
+PackageSupplier: Organization: Microsoft Corporation
+PackageDownloadLocation: https://registry.npmjs.org/@playwright/test/
 FilesAnalyzed: false
-PackageLicenseConcluded: ISC
-PackageCopyrightText: NOASSERTION
+PackageLicenseConcluded: Apache-2.0
+PackageCopyrightText: Copyright Microsoft Corporation
 
-PackageName: recharts
-SPDXID: SPDXRef-recharts
-PackageVersion: 2.7.2
-PackageSupplier: Organization: Recharts Group
-PackageDownloadLocation: https://registry.npmjs.org/recharts/-/recharts-2.7.2.tgz
+PackageName: typescript
+SPDXID: SPDXRef-typescript
+PackageVersion: 5.0.0+
+PackageSupplier: Organization: Microsoft Corporation
+PackageDownloadLocation: https://registry.npmjs.org/typescript/
+FilesAnalyzed: false
+PackageLicenseConcluded: Apache-2.0
+PackageCopyrightText: Copyright Microsoft Corporation
+
+# External Services and APIs
+PackageName: aws-bedrock-claude
+SPDXID: SPDXRef-aws-bedrock-claude
+PackageVersion: claude-3-5-sonnet-20241022-v2:0
+PackageSupplier: Organization: Amazon Web Services
+PackageDownloadLocation: NOASSERTION
+FilesAnalyzed: false
+PackageLicenseConcluded: NOASSERTION
+PackageCopyrightText: Copyright Amazon.com Inc. or its affiliates
+
+PackageName: aws-bedrock-service
+SPDXID: SPDXRef-aws-bedrock-service
+PackageVersion: NOASSERTION
+PackageSupplier: Organization: Amazon Web Services
+PackageDownloadLocation: NOASSERTION
+FilesAnalyzed: false
+PackageLicenseConcluded: NOASSERTION
+PackageCopyrightText: Copyright Amazon.com Inc. or its affiliates
+
+# Repository Structure Components
+PackageName: backend-api
+SPDXID: SPDXRef-backend-api
+PackageVersion: 1.0.0
+PackageSupplier: Organization: AI Tool Intelligence Team
+PackageDownloadLocation: NOASSERTION
 FilesAnalyzed: false
 PackageLicenseConcluded: MIT
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2025 AI Tool Intelligence Team
+PackageDescription: Flask-based REST API with 50+ endpoints for tool management, research operations, competitive analysis, and admin functions
 
-PackageName: date-fns
-SPDXID: SPDXRef-date-fns
-PackageVersion: 2.30.0
-PackageSupplier: Person: Sasha Koss
-PackageDownloadLocation: https://registry.npmjs.org/date-fns/-/date-fns-2.30.0.tgz
+PackageName: frontend-ui
+SPDXID: SPDXRef-frontend-ui
+PackageVersion: 1.0.0
+PackageSupplier: Organization: AI Tool Intelligence Team
+PackageDownloadLocation: NOASSERTION
 FilesAnalyzed: false
 PackageLicenseConcluded: MIT
-PackageCopyrightText: NOASSERTION
+PackageCopyrightText: Copyright 2025 AI Tool Intelligence Team
+PackageDescription: React-based user interface for tool management, research monitoring, and admin dashboard
 
-# Relationships
+PackageName: testing-suite
+SPDXID: SPDXRef-testing-suite
+PackageVersion: 1.0.0
+PackageSupplier: Organization: AI Tool Intelligence Team
+PackageDownloadLocation: NOASSERTION
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2025 AI Tool Intelligence Team
+PackageDescription: Comprehensive testing framework with unit tests, integration tests, E2E tests using Playwright, and performance testing
+
+PackageName: documentation
+SPDXID: SPDXRef-documentation
+PackageVersion: 1.0.0
+PackageSupplier: Organization: AI Tool Intelligence Team
+PackageDownloadLocation: NOASSERTION
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2025 AI Tool Intelligence Team
+PackageDescription: Complete documentation including setup guides, API reference, troubleshooting, and onboarding materials
+
+PackageName: automation-scripts
+SPDXID: SPDXRef-automation-scripts
+PackageVersion: 1.0.0
+PackageSupplier: Organization: AI Tool Intelligence Team
+PackageDownloadLocation: NOASSERTION
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2025 AI Tool Intelligence Team
+PackageDescription: Setup, deployment, monitoring, and development automation scripts for cross-platform support
+
+# AI Research Components
+PackageName: research-agents
+SPDXID: SPDXRef-research-agents
+PackageVersion: 1.0.0
+PackageSupplier: Organization: AI Tool Intelligence Team
+PackageDownloadLocation: NOASSERTION
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2025 AI Tool Intelligence Team
+PackageDescription: 13 specialized research agents for comprehensive AI tool analysis including GitHub stats, pricing, company data, and market intelligence
+
+PackageName: competitive-analysis-engine
+SPDXID: SPDXRef-competitive-analysis-engine
+PackageVersion: 1.0.0
+PackageSupplier: Organization: AI Tool Intelligence Team
+PackageDownloadLocation: NOASSERTION
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2025 AI Tool Intelligence Team
+PackageDescription: Market analysis and competitive intelligence engine with trend tracking, positioning analysis, and strategic insights
+
+PackageName: admin-interface
+SPDXID: SPDXRef-admin-interface
+PackageVersion: 1.0.0
+PackageSupplier: Organization: AI Tool Intelligence Team
+PackageDownloadLocation: NOASSERTION
+FilesAnalyzed: false
+PackageLicenseConcluded: MIT
+PackageCopyrightText: Copyright 2025 AI Tool Intelligence Team
+PackageDescription: Enterprise admin interface with data curation, system monitoring, audit trails, and bulk operations
+
+# Relationships - Core Package Dependencies
 Relationship: SPDXRef-DOCUMENT DESCRIBES SPDXRef-Package
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-Flask
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-Flask-SQLAlchemy
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-Flask-CORS
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-strands-agents
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-strands-agents-tools
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-boto3
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-botocore
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-beautifulsoup4
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-requests
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-lxml
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-pandas
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-numpy
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-python-dotenv
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-click
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-schedule
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-psutil
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-pytest
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-pytest-flask
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-python-dateutil
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-gunicorn
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-react
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-react-dom
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-react-scripts
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-typescript
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-axios
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-tailwindcss
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-lucide-react
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-recharts
-Relationship: SPDXRef-Package DEPENDS_ON SPDXRef-date-fns
+Relationship: SPDXRef-Package CONTAINS SPDXRef-backend-api
+Relationship: SPDXRef-Package CONTAINS SPDXRef-frontend-ui
+Relationship: SPDXRef-Package CONTAINS SPDXRef-testing-suite
+Relationship: SPDXRef-Package CONTAINS SPDXRef-documentation
+Relationship: SPDXRef-Package CONTAINS SPDXRef-automation-scripts
+Relationship: SPDXRef-Package CONTAINS SPDXRef-research-agents
+Relationship: SPDXRef-Package CONTAINS SPDXRef-competitive-analysis-engine
+Relationship: SPDXRef-Package CONTAINS SPDXRef-admin-interface
+
+# Backend Dependencies
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-Flask
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-Flask-SQLAlchemy
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-Flask-CORS
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-SQLAlchemy
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-Werkzeug
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-Jinja2
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-strands-agents
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-strands-tools
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-boto3
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-botocore
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-requests
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-beautifulsoup4
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-firecrawl-py
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-github3-py
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-python-dotenv
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-click
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-pydantic
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-schedule
+Relationship: SPDXRef-backend-api DEPENDS_ON SPDXRef-psutil
+
+# Frontend Dependencies
+Relationship: SPDXRef-frontend-ui DEPENDS_ON SPDXRef-react
+Relationship: SPDXRef-frontend-ui DEPENDS_ON SPDXRef-react-dom
+Relationship: SPDXRef-frontend-ui DEPENDS_ON SPDXRef-react-scripts
+Relationship: SPDXRef-frontend-ui DEPENDS_ON SPDXRef-tailwindcss
+Relationship: SPDXRef-frontend-ui DEPENDS_ON SPDXRef-typescript
+
+# Testing Dependencies
+Relationship: SPDXRef-testing-suite DEPENDS_ON SPDXRef-pytest
+Relationship: SPDXRef-testing-suite DEPENDS_ON SPDXRef-pytest-cov
+Relationship: SPDXRef-testing-suite DEPENDS_ON SPDXRef-pytest-mock
+Relationship: SPDXRef-testing-suite DEPENDS_ON SPDXRef-pytest-asyncio
+Relationship: SPDXRef-testing-suite DEPENDS_ON SPDXRef-pytest-benchmark
+Relationship: SPDXRef-testing-suite DEPENDS_ON SPDXRef-factory-boy
+Relationship: SPDXRef-testing-suite DEPENDS_ON SPDXRef-playwright
+
+# Development Dependencies
+Relationship: SPDXRef-Package DEV_DEPENDENCY_OF SPDXRef-black
+Relationship: SPDXRef-Package DEV_DEPENDENCY_OF SPDXRef-isort
+Relationship: SPDXRef-Package DEV_DEPENDENCY_OF SPDXRef-flake8
+Relationship: SPDXRef-Package DEV_DEPENDENCY_OF SPDXRef-mypy
+Relationship: SPDXRef-Package DEV_DEPENDENCY_OF SPDXRef-bandit
+Relationship: SPDXRef-Package DEV_DEPENDENCY_OF SPDXRef-safety
+Relationship: SPDXRef-Package DEV_DEPENDENCY_OF SPDXRef-pre-commit
+Relationship: SPDXRef-Package DEV_DEPENDENCY_OF SPDXRef-ipython
+Relationship: SPDXRef-Package DEV_DEPENDENCY_OF SPDXRef-ipdb
+
+# Documentation Dependencies
+Relationship: SPDXRef-documentation DEPENDS_ON SPDXRef-sphinx
+Relationship: SPDXRef-documentation DEPENDS_ON SPDXRef-sphinx-rtd-theme
+Relationship: SPDXRef-documentation DEPENDS_ON SPDXRef-myst-parser
+
+# Production Dependencies
+Relationship: SPDXRef-backend-api OPTIONAL_DEPENDENCY_OF SPDXRef-gunicorn
+Relationship: SPDXRef-backend-api OPTIONAL_DEPENDENCY_OF SPDXRef-psycopg2-binary
+
+# External Service Dependencies
+Relationship: SPDXRef-research-agents DEPENDS_ON SPDXRef-aws-bedrock-claude
+Relationship: SPDXRef-research-agents DEPENDS_ON SPDXRef-aws-bedrock-service
+
+# Component Relationships
+Relationship: SPDXRef-research-agents DEPENDS_ON SPDXRef-backend-api
+Relationship: SPDXRef-competitive-analysis-engine DEPENDS_ON SPDXRef-backend-api
+Relationship: SPDXRef-admin-interface DEPENDS_ON SPDXRef-backend-api
+Relationship: SPDXRef-frontend-ui DEPENDS_ON SPDXRef-backend-api

@@ -30,17 +30,28 @@ A complete competitive intelligence platform that automatically researches AI de
 - **Export Capabilities**: Multi-format data export (JSON, CSV, Excel) for external analysis
 - **System Analytics**: Performance tracking, trend analysis, and operational insights
 
-## 📚 Documentation Hub
+## 📚 Complete Documentation Hub
 
-**👉 [DOCUMENTATION_INDEX.md](DOCUMENTATION_INDEX.md) - Complete documentation guide with organized links to all docs**
+**👉 [docs/README.md](docs/README.md) - Master documentation index with all guides organized by use case**
 
-### 🚀 **Quick Links by Use Case:**
-- **🆕 New machine installation**: [NEW_MACHINE_CHECKLIST.md](NEW_MACHINE_CHECKLIST.md)
-- **⚡ Fast 15-minute setup**: [QUICK_START.md](QUICK_START.md)
-- **🖥️ Windows management**: [windows/README.md](windows/README.md)
-- **🐛 Troubleshooting**: [WINDOWS_SETUP.md](WINDOWS_SETUP.md)
-- **☁️ AWS configuration**: [AWS_SETUP.md](AWS_SETUP.md)
-- **🏢 Enterprise features**: [APPLICATION_WORKFLOW.md](APPLICATION_WORKFLOW.md)
+### 🎯 **Essential Quick Links:**
+- **🆕 Installing on new machine**: [docs/setup/new-machine-setup.md](docs/setup/new-machine-setup.md) ← **Start here!**
+- **🛠️ Issues and solutions**: [docs/setup/troubleshooting.md](docs/setup/troubleshooting.md) ← **Debugging guide**
+- **🔌 Complete API reference**: [docs/api/endpoints.md](docs/api/endpoints.md) ← **All endpoints**
+- **⚖️ Frontend vs Backend features**: [docs/features/feature-parity.md](docs/features/feature-parity.md) ← **Missing UI features**
+
+### 🔧 **Setup & Configuration:**
+- **⚡ 15-minute setup**: [docs/setup/quick-start.md](docs/setup/quick-start.md)
+- **🖥️ Windows setup**: [docs/setup/windows-setup.md](docs/setup/windows-setup.md)  
+- **☁️ AWS configuration**: [docs/setup/aws-setup.md](docs/setup/aws-setup.md)
+- **🏢 Enterprise workflow**: [docs/development/architecture.md](docs/development/architecture.md)
+
+### 📋 **Current Status (June 2025):**
+- ✅ **Backend**: 100% functional with enterprise features
+- ✅ **Basic Frontend**: Tool management working
+- ⚠️ **Advanced Frontend**: 85% of backend features need UI
+- ✅ **Documentation**: Complete setup and troubleshooting guides
+- ✅ **Testing**: Comprehensive validation scripts
 
 ## 🚀 Quick Start (15 Minutes to MVP)
 
@@ -50,48 +61,94 @@ A complete competitive intelligence platform that automatically researches AI de
 - **AWS Account** with Bedrock access
 - **Claude 3.5 Sonnet** enabled in AWS Bedrock (us-east-1 region)
 
-### Windows Quick Install
-
-```powershell
-# 1. Clone/download the project
-git clone https://github.com/yourusername/ai-tool-intelligence.git
-cd ai-tool-intelligence
-
-# 2. Run automated Windows setup
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-.\windows\Setup.ps1
-
-# 3. Configure AWS (edit backend\.env with your credentials)
-notepad backend\.env
-
-# 4. Start with enhanced stability features
-.\start_windows.bat
-```
-
-### Linux/Mac Quick Install
+### 🔥 Express Setup (Recommended)
 
 ```bash
-# 1. Clone and setup
+# 1. Clone repository
 git clone https://github.com/yourusername/ai-tool-intelligence.git
 cd ai-tool-intelligence
-chmod +x setup.sh
-./setup.sh
 
-# 2. Configure AWS
-cp backend/.env.example backend/.env
-nano backend/.env  # Add your AWS credentials
+# 2. One-command setup and start
+make setup
+make start
 
-# 3. Start the platform
-./scripts/start.sh
+# 3. Configure AWS credentials when prompted
+# Follow the setup guide: docs/setup/ONBOARDING_COMPLETE_GUIDE.md
 ```
 
-### First Use
+### 📋 Alternative Platform-Specific Setup
 
-1. **Open** http://localhost:3000
-2. **Add a tool** with basic info (name, website)
-3. **Click "Research"** to test automated analysis
-4. **Wait 2-3 minutes** for comprehensive results
-5. **Explore admin features** with header `X-Admin-User: admin`
+#### **Windows PowerShell**
+```powershell
+# Clone and setup
+git clone https://github.com/yourusername/ai-tool-intelligence.git
+cd ai-tool-intelligence
+
+# Install dependencies
+cd backend
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+
+cd ..\frontend
+npm install
+
+# Configure and start
+copy .env.example .env
+notepad .env  # Add AWS credentials
+make start
+```
+
+#### **macOS/Linux Terminal**
+```bash
+# Clone and setup  
+git clone https://github.com/yourusername/ai-tool-intelligence.git
+cd ai-tool-intelligence
+
+# Install dependencies
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+cd ../frontend
+npm install
+
+# Configure and start
+cp .env.example .env
+nano .env  # Add AWS credentials
+make start
+```
+
+## 🎯 **Critical Setup Steps**
+
+### **⚠️ BEFORE YOU START - READ THIS**
+
+1. **📋 Complete Onboarding Guide**: [docs/setup/ONBOARDING_COMPLETE_GUIDE.md](docs/setup/ONBOARDING_COMPLETE_GUIDE.md) ← **Essential reading**
+2. **🔧 Troubleshooting Guide**: [docs/setup/TROUBLESHOOTING_COMPLETE.md](docs/setup/TROUBLESHOOTING_COMPLETE.md) ← **If anything fails**
+3. **⚡ Prerequisites Check**: Python 3.10+, Node.js 18+, AWS Account with Bedrock
+4. **🔑 AWS Configuration**: Enable Claude 3.5 Sonnet in AWS Bedrock (us-east-1) **BEFORE** research
+
+### **🚀 First Use - Test Everything Works**
+
+1. **Open Frontend**: http://localhost:3000
+2. **Verify Backend**: http://localhost:5000/api/health (should return `{"status": "healthy"}`)
+3. **Add Test Tool**:
+   ```
+   Name: Cursor
+   Category: Code Assistants  
+   Website: https://cursor.sh
+   Description: AI-first code editor
+   ```
+4. **Click "Research"** → Should start AI analysis (2-3 minutes)
+5. **Check Results** → Comprehensive analysis with GitHub stats, pricing, features
+6. **Test Admin Features** → Add header `X-Admin-User: admin` to requests
+
+### **🆘 If Something Fails**
+
+1. **Check the troubleshooting guide**: [docs/setup/TROUBLESHOOTING_COMPLETE.md](docs/setup/TROUBLESHOOTING_COMPLETE.md)
+2. **Run health check**: `make monitor`
+3. **Reset if needed**: Follow "Complete Platform Reset" in troubleshooting guide
 
 ## 🏢 Enterprise Features Overview
 
