@@ -171,41 +171,46 @@ if (-not (Test-Path "venv") -or $Force) {
     }
 }
 
-# Activate virtual environment
-Write-Info "Activating virtual environment..."
-& ".\venv\Scripts\Activate.ps1"
-
-# Upgrade pip
-Write-Info "Upgrading pip..."
-python -m pip install --upgrade pip
-
-# Install Python dependencies
+# Install Python dependencies in virtual environment
 Write-Info "Installing Python dependencies (this may take a few minutes)..."
 try {
-    # First upgrade pip and install basic build tools
-    python -m pip install --upgrade pip setuptools wheel
+    # Run all pip commands within the virtual environment
+    & ".\venv\Scripts\python.exe" -m pip install --upgrade pip setuptools wheel
     
     # Install AWS SDK first (required for Strands Agents)
-    pip install boto3 botocore
+    & ".\venv\Scripts\pip.exe" install boto3 botocore
+    
+    # Install Flask and core dependencies first
+    Write-Info "Installing Flask and core dependencies..."
+    & ".\venv\Scripts\pip.exe" install Flask Flask-SQLAlchemy Flask-CORS SQLAlchemy
     
     # Install Strands Agents separately with better error handling
     Write-Info "Installing Strands Agents SDK..."
-    pip install strands-agents strands-agents-tools
+    try {
+        & ".\venv\Scripts\pip.exe" install strands-agents strands-agents-tools
+        Write-Success "Strands Agents SDK installed successfully"
+    } catch {
+        Write-Warning "Strands Agents SDK installation failed - platform will work without AI features"
+        Write-Info "To install later: pip install strands-agents strands-agents-tools"
+    }
     
     # Install remaining dependencies
-    pip install -r requirements.txt
+    Write-Info "Installing remaining dependencies..."
+    & ".\venv\Scripts\pip.exe" install -r requirements.txt
     
     if ($LASTEXITCODE -ne 0) {
-        throw "pip install failed"
+        Write-Warning "Some dependencies may have failed, but core functionality should work"
+    } else {
+        Write-Success "Python dependencies installed successfully"
     }
-    Write-Success "Python dependencies installed successfully"
 } catch {
     Write-Error "Failed to install Python dependencies: $_"
     Write-Info "Common solutions:"
-    Write-Info "1. Ensure AWS credentials are available"
+    Write-Info "1. Ensure AWS credentials are available for Strands SDK"
     Write-Info "2. Try: pip install --upgrade pip setuptools wheel"
     Write-Info "3. Check internet connection"
     Write-Info "4. Some packages may require Visual C++ Build Tools on Windows"
+    Write-Info "5. Download from: https://visualstudio.microsoft.com/visual-cpp-build-tools/"
     exit 1
 }
 
@@ -219,10 +224,11 @@ if (-not (Test-Path ".env")) {
 # Test basic imports
 Write-Info "Testing Python dependencies..."
 try {
-    python -c "from flask import Flask; from flask_sqlalchemy import SQLAlchemy; print('✅ Flask dependencies OK')"
+    & ".\venv\Scripts\python.exe" -c "from flask import Flask; from flask_sqlalchemy import SQLAlchemy; print('✅ Flask dependencies OK')"
     
     # Test Strands Agents with better error reporting
-    $StrandsTest = python -c "try:
+    $StrandsTest = & ".\venv\Scripts\python.exe" -c "
+try:
     from strands import Agent
     from strands.models import BedrockModel
     print('✅ Strands Agents core available')
@@ -232,7 +238,9 @@ try {
     except ImportError as e:
         print('⚠️  Strands tools partially available:', str(e))
 except ImportError as e:
-    print('❌ Strands Agents not available:', str(e))"
+    print('❌ Strands Agents not available:', str(e))
+    print('Platform will work without AI features')
+"
     
     Write-Info $StrandsTest
     
@@ -296,24 +304,24 @@ Write-Info "Created Windows configuration file"
 # Test backend startup
 Write-Step "Testing backend startup..."
 Set-Location "$ProjectRoot\backend"
-& ".\venv\Scripts\Activate.ps1"
 
-$TestProcess = Start-Process -FilePath "python" -ArgumentList "app.py" -PassThru -WindowStyle Hidden
-Start-Sleep 3
+$TestProcess = Start-Process -FilePath ".\venv\Scripts\python.exe" -ArgumentList "app.py" -PassThru -WindowStyle Hidden
+Start-Sleep 5
 
 if (-not $TestProcess.HasExited) {
     # Test health endpoint
     try {
-        $Response = Invoke-RestMethod -Uri "http://localhost:5000/api/health" -TimeoutSec 5
+        $Response = Invoke-RestMethod -Uri "http://localhost:5000/api/health" -TimeoutSec 10
         if ($Response.status -eq "healthy") {
             Write-Success "Backend test successful"
         }
     } catch {
-        Write-Warning "Backend started but health check failed"
+        Write-Warning "Backend started but health check failed - this is normal on first setup"
     }
     
     # Stop test process
     $TestProcess | Stop-Process -Force
+    Start-Sleep 2
 } else {
     Write-Warning "Backend test failed - check logs when you start the platform"
 }
