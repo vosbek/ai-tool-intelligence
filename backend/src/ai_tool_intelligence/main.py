@@ -99,24 +99,25 @@ def create_app(config_name='development'):
     return app
 
 def register_routes(app, db):
+    # Ensure upload directory exists
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-# Ensure upload directory exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    # Models
+    class Category(db.Model):
+        __tablename__ = 'categories'
+        __table_args__ = {'extend_existing': True}
+        id = db.Column(db.Integer, primary_key=True)
+        name = db.Column(db.String(100), nullable=False)
+        parent_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
+        description = db.Column(db.Text)
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
+        
+        children = db.relationship('Category', backref=db.backref('parent', remote_side=[id]))
+        tools = db.relationship('Tool', backref='category')
 
-# Models
-class Category(db.Model):
-    __tablename__ = 'categories'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    parent_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
-    description = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    children = db.relationship('Category', backref=db.backref('parent', remote_side=[id]))
-    tools = db.relationship('Tool', backref='category')
-
-class Tool(db.Model):
-    __tablename__ = 'tools'
+    class Tool(db.Model):
+        __tablename__ = 'tools'
+        __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'))
