@@ -1,8 +1,28 @@
-# Complete Windows Setup Guide for AI Tool Intelligence Platform
+# Windows Setup Guide for AI Tool Intelligence Platform
 
-> **Enterprise-grade AI tool intelligence platform setup for Windows 10/11**
+> **AI-powered tool intelligence platform setup for Windows 10/11**
 
-This guide provides detailed, step-by-step instructions for setting up the AI Tool Intelligence Platform on a new Windows machine. Follow every step carefully to ensure a successful installation.
+This guide provides step-by-step instructions for setting up the AI Tool Intelligence Platform on Windows. The platform tracks and analyzes AI development tools with automated research capabilities.
+
+## 🎯 Quick Start
+
+For immediate setup, run these commands in order:
+
+```powershell
+# 1. Clone the repository
+git clone <repository-url>
+cd ai-tool-intelligence
+
+# 2. Run automated setup
+windows\setup-windows.bat
+
+# 3. Start the application
+windows\start-windows.bat
+```
+
+**That's it!** The application will be available at http://localhost:3000
+
+## 📖 Detailed Setup Instructions
 
 ## 📋 Prerequisites Checklist
 
@@ -20,37 +40,64 @@ Before starting, ensure your Windows machine meets these requirements:
 
 > **💡 Enhanced Stability Features**: This platform now includes comprehensive Windows stability features including graceful shutdown, error handling, system monitoring, and crash reporting.
 
-#### 1.1 Install Python 3.10+ (Required for Strands SDK)
+#### 1.1 Install Python 3.11+ (Required for Strands SDK)
+
+> **⚠️ Python Version Compatibility**: Use Python 3.11 or 3.12 for best compatibility. Python 3.13+ may have package compilation issues with some dependencies like pandas.
 
 **Option A: Download from Python.org (Recommended)**
 1. Go to [python.org/downloads](https://www.python.org/downloads/)
-2. Download **Python 3.11.x** (latest stable version)
+2. Download **Python 3.11.x** or **Python 3.12.x** (stable versions)
 3. **IMPORTANT**: During installation, check these boxes:
    - ✅ "Add Python to PATH"
    - ✅ "Install for all users"
    - ✅ "Add Python to environment variables"
+   - ✅ "Install py launcher" (enables `py` command)
 4. Choose "Custom Installation" and select:
    - ✅ Documentation
    - ✅ pip
    - ✅ tcl/tk and IDLE
    - ✅ Python test suite
-   - ✅ py launcher
+   - ✅ py launcher for all users
 
 **Option B: Install via Windows Package Manager**
 ```powershell
 # Open PowerShell as Administrator
 winget install Python.Python.3.11
+# OR for Python 3.12
+winget install Python.Python.3.12
 
 # Verify installation
 python --version
+# Should output: Python 3.11.x or 3.12.x
+```
+
+**Managing Multiple Python Versions:**
+
+If you have multiple Python versions installed, use the Python Launcher:
+
+```powershell
+# Check all installed Python versions
+py -0
+
+# Example output:
+# -V:3.13 *        Python 3.13 (64-bit)  [Current default]
+# -V:3.12          Python 3.12 (64-bit)
+# -V:3.11          Python 3.11 (64-bit)
+
+# Use specific Python version for this project
+py -3.11 --version
 # Should output: Python 3.11.x
 ```
 
 **Verify Python Installation:**
 ```powershell
-# Open Command Prompt or PowerShell
+# Check default Python
 python --version
 pip --version
+
+# Check specific version (recommended for this project)
+py -3.11 --version
+py -3.11 -m pip --version
 
 # Should show:
 # Python 3.11.x
@@ -138,7 +185,13 @@ dir
 # Ensure you're in the project root directory
 cd C:\Projects\ai-tool-intelligence
 
-# Create virtual environment
+# Check available Python versions (if multiple installed)
+py -0
+
+# Create virtual environment with specific Python version (recommended)
+py -3.11 -m venv venv
+
+# Alternative: Use default Python (if you only have Python 3.11/3.12)
 python -m venv venv
 
 # Verify virtual environment was created
@@ -146,10 +199,20 @@ dir venv
 # Should show: Include/, Lib/, Scripts/, pyvenv.cfg
 
 # Activate virtual environment
-venv\Scripts\activate
+venv\Scripts\Activate.ps1
+
+# If you get execution policy error, run this first:
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Then activate again
+venv\Scripts\Activate.ps1
 
 # Verify activation (your prompt should show (venv))
 # Command prompt should now show: (venv) C:\Projects\ai-tool-intelligence>
+
+# Verify Python version in virtual environment
+python --version
+# Should show: Python 3.11.x (the version you specified)
 
 # Verify Python is using virtual environment
 where python
@@ -161,28 +224,26 @@ where python
 - If you close your terminal, you'll need to activate it again
 - To deactivate: run `deactivate`
 
-### Step 3: Install Python Dependencies
+### Step 3: Install Dependencies
 
-#### 3.1 Upgrade pip and Install Core Packages
+#### 3.1 Backend Dependencies
 
 ```powershell
-# Ensure virtual environment is activated (you should see (venv) in prompt)
-# If not activated, run: venv\Scripts\activate
-
-# Upgrade pip to latest version
-python -m pip install --upgrade pip setuptools wheel
-
-# Install core requirements
+# Navigate to backend directory
 cd backend
+
+# Activate virtual environment
+venv\Scripts\activate
+
+# Upgrade pip and install requirements
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 
-# This will install:
-# - Flask and web framework dependencies
-# - AWS Strands Agents and tools
-# - SQLAlchemy for database management
-# - All competitive analysis components
-# - Admin interface dependencies
-# - Monitoring and logging systems
+# This installs:
+# - Flask web framework
+# - SQLAlchemy for database
+# - Strands Agents for AI research
+# - All necessary dependencies
 ```
 
 **If you encounter SSL certificate errors:**
@@ -418,38 +479,36 @@ print('✅ All enterprise components loaded successfully')
 .\windows\start-windows.bat
 
 # This will:
-# 1. Activate virtual environment
-# 2. Start backend on port 5000
-# 3. Start frontend on port 3000
-# 4. Open browser automatically
+# 1. Start backend on port 5000 in a new window
+# 2. Start frontend on port 3000 in a new window
+# 3. Display connection information
 ```
 
 #### 7.2 Manual Start (Alternative)
 
 **Terminal 1 - Backend:**
 ```powershell
-# Navigate to project root
-cd C:\Projects\ai-tool-intelligence
+# Navigate to backend directory
+cd backend
 
 # Activate virtual environment
 venv\Scripts\activate
 
 # Start backend
-cd backend
 python app.py
 
 # Should show:
 # 🚀 Starting AI Tool Intelligence Platform
-# ✅ Enhanced schema initialized
-# ✅ Enhanced competitive intelligence system ready
-# ✅ Logging and monitoring system initialized
-# * Running on http://0.0.0.0:5000
+# Frontend: http://localhost:3000
+# Backend API: http://localhost:5000
+# Health Check: http://localhost:5000/api/health
+# ✅ Application ready for requests
 ```
 
 **Terminal 2 - Frontend:**
 ```powershell
 # Open new PowerShell window
-cd C:\Projects\ai-tool-intelligence\frontend
+cd frontend
 
 # Start frontend
 npm start
@@ -557,44 +616,85 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 
 **Error: "Python is not recognized as an internal or external command"**
 ```powershell
-# Solution 1: Reinstall Python with PATH option checked
-# Solution 2: Manually add Python to PATH
+# Solution 1: Use Python Launcher instead
+py -3.11 --version
+
+# Solution 2: Reinstall Python with PATH option checked
+# Solution 3: Manually add Python to PATH
 $env:PATH += ";C:\Python311;C:\Python311\Scripts"
 
 # Verify
 python --version
 ```
 
-**Error: "Python 3.10+ is required"**
+**Error: "Python 3.11+ is required" or Package Compilation Issues**
 ```powershell
 # Check current version
 python --version
 
-# If version is too old, uninstall and reinstall Python 3.11+
+# Check all available versions
+py -0
+
+# If using Python 3.13+, switch to Python 3.11 or 3.12
+# Method 1: Recreate virtual environment with specific version
+Remove-Item -Recurse -Force venv
+py -3.11 -m venv venv
+venv\Scripts\Activate.ps1
+
+# Method 2: Install compatible Python version
+winget install Python.Python.3.11
+```
+
+**Error: "pandas compilation failed" or similar build errors**
+```powershell
+# This usually means you're using Python 3.13+ 
+# Switch to Python 3.11 or 3.12:
+py -0  # Check available versions
+Remove-Item -Recurse -Force venv
+py -3.11 -m venv venv  # Use Python 3.11
+venv\Scripts\Activate.ps1
+python --version  # Should show 3.11.x
 ```
 
 #### 2. Virtual Environment Issues
 
 **Error: "venv\Scripts\activate is not recognized"**
 ```powershell
-# Try full path
-C:\Projects\ai-tool-intelligence\venv\Scripts\activate.bat
-
-# Or use PowerShell activation
+# Use PowerShell activation script instead
 venv\Scripts\Activate.ps1
 
 # If execution policy prevents this:
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Then try again
+venv\Scripts\Activate.ps1
+
+# Alternative: Use full path
+C:\Projects\ai-tool-intelligence\venv\Scripts\Activate.ps1
 ```
 
 **Error: Virtual environment not working properly**
 ```powershell
-# Delete and recreate virtual environment
-rmdir /s venv
-python -m venv venv
-venv\Scripts\activate
+# Delete and recreate virtual environment with specific Python version
+Remove-Item -Recurse -Force venv
+py -3.11 -m venv venv  # Use Python 3.11 specifically
+venv\Scripts\Activate.ps1
+python --version  # Verify correct version
 pip install --upgrade pip
 pip install -r backend\requirements.txt
+```
+
+**Error: "execution of scripts is disabled on this system"**
+```powershell
+# Change PowerShell execution policy
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Verify the change
+Get-ExecutionPolicy -Scope CurrentUser
+# Should show: RemoteSigned
+
+# Now try activating again
+venv\Scripts\Activate.ps1
 ```
 
 #### 3. Node.js and npm Issues
@@ -806,6 +906,33 @@ sc start "AI Tool Intelligence Platform"
 # Stop service
 sc stop "AI Tool Intelligence Platform"
 ```
+
+## 🐍 Quick Reference: Python Version Management
+
+### Managing Multiple Python Versions on Windows
+
+```powershell
+# List all installed Python versions
+py -0
+
+# Use specific Python version for commands
+py -3.11 --version          # Check Python 3.11 version
+py -3.12 -m pip --version   # Use pip with Python 3.12
+py -3.11 -m venv myproject  # Create venv with Python 3.11
+
+# Create project with specific Python version
+Remove-Item -Recurse -Force venv  # Remove existing venv
+py -3.11 -m venv venv             # Create with Python 3.11
+venv\Scripts\Activate.ps1         # Activate
+python --version                  # Verify version in venv
+```
+
+### Recommended Python Versions for AI Tool Intelligence
+
+- ✅ **Python 3.11.x** - Fully compatible, recommended
+- ✅ **Python 3.12.x** - Compatible, good choice
+- ⚠️ **Python 3.13.x** - May have package compilation issues
+- ❌ **Python 3.10.x or older** - Not recommended, missing features
 
 ## 🚀 Next Steps
 

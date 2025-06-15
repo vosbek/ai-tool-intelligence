@@ -1,0 +1,11 @@
+{
+    "project_root": "/mnt/c/devl/ai-tool-intelligence",
+    "python_path": "/mnt/c/devl/ai-tool-intelligence/backend/venv/bin/python3",
+    "node_path": "/home/satie/.nvm/versions/node/v24.2.0/bin/node",
+    "npm_path": "/home/satie/.nvm/versions/node/v24.2.0/bin/npm",
+    "backend_port": 5000,
+    "frontend_port": 3000,
+    "auto_open_browser": true,
+    "log_level": "INFO",
+    "created": "2025-06-14T20:39:01-04:00"
+}

@@ -1,18 +1,58 @@
 # AI Tool Intelligence Platform
 
-> **Enterprise-grade AI tool intelligence platform with automated research, competitive analysis, real-time monitoring, and comprehensive admin capabilities**
+> **Enterprise-grade AI tool intelligence platform with automated research, competitive analysis, and comprehensive monitoring capabilities**
 
-A complete competitive intelligence platform that automatically researches AI developer tools, tracks market changes, analyzes competitive landscapes, and provides real-time business intelligence with advanced monitoring, logging, and admin capabilities.
+A complete competitive intelligence platform that automatically researches AI developer tools, tracks market changes, analyzes competitive landscapes, and provides real-time business intelligence with advanced monitoring and admin capabilities.
+
+## 🚀 Quick Start (Windows Enterprise)
+
+### Automated Setup (Recommended)
+```powershell
+# Clone repository
+git clone <repository-url>
+cd ai-tool-intelligence
+
+# Run automated Windows setup
+windows\setup-windows.bat
+
+# Start application
+windows\start-windows.bat
+```
+
+### Manual Setup (Alternative)
+```powershell
+# Backend setup
+cd backend
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+
+# Frontend setup
+cd ..\frontend
+npm install
+
+# Configure and start
+copy backend\.env.example backend\.env
+# Edit backend\.env with AWS credentials
+windows\start-windows.bat
+```
+
+## 🌐 Access Points
+
+- **Frontend Dashboard**: http://localhost:3000
+- **Backend API**: http://localhost:5000
+- **Health Check**: http://localhost:5000/api/health
+- **System Status**: http://localhost:5000/api/system/status
 
 ## 🎯 Enterprise Platform Capabilities
 
 ### 🔍 **Intelligent Research & Monitoring**
-- **Automated Research**: 13 specialized AWS Strands tools analyze GitHub repos, pricing, company data, documentation, and integrations
-- **Real-time Change Detection**: Continuous monitoring of tool updates, pricing changes, and market movements
+- **Automated Research**: Strands Agents analyze GitHub repos, pricing, company data, documentation, and integrations
+- **Real-time Change Detection**: Continuous monitoring of tool updates, pricing changes, and market movements  
 - **Quality Scoring**: AI-powered data validation and quality assessment for all collected information
 - **Batch Processing**: Systematic competitive monitoring with configurable schedules and priorities
 
-### 📊 **Advanced Competitive Intelligence**
+### 📊 **Advanced Competitive Intelligence** 
 - **Market Analysis**: Comprehensive competitive landscape analysis with positioning and trend tracking
 - **Trend Forecasting**: AI-powered prediction of market movements and technology adoption patterns
 - **Competitive Metrics**: Multi-dimensional scoring system for feature analysis, popularity tracking, and market maturity
@@ -29,6 +69,14 @@ A complete competitive intelligence platform that automatically researches AI de
 - **Bulk Operations**: Mass processing capabilities for large-scale data management
 - **Export Capabilities**: Multi-format data export (JSON, CSV, Excel) for external analysis
 - **System Analytics**: Performance tracking, trend analysis, and operational insights
+
+## 🛠️ Technology Stack
+
+- **Backend**: Python Flask, SQLAlchemy, Strands Agents
+- **Frontend**: React, JavaScript
+- **Database**: SQLite (default), supports PostgreSQL/MySQL
+- **AI Research**: AWS Bedrock with Claude 3.5 Sonnet
+- **Enterprise Features**: Advanced monitoring, logging, admin interfaces
 
 ## 📚 Complete Documentation Hub
 
