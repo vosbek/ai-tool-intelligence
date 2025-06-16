@@ -834,7 +834,7 @@ const App = () => {
       <div className="min-h-screen bg-gray-50">
         <div className="p-6">
           <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">AI Tool Intelligence Platform</h1>
               <p className="text-gray-600 mt-1">Comprehensive research and analysis of AI developer tools</p>
@@ -1075,6 +1075,7 @@ const App = () => {
           {/* Footer */}
           <div className="mt-8 text-center text-sm text-gray-500">
             <p>AI Tool Intelligence Platform - Powered by AWS Strands Agents</p>
+          </div>
           </div>
         </div>
       </div>
