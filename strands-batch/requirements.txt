@@ -1,0 +1,30 @@
+# Strands Batch CLI Requirements
+# Python 3.10+ required for Strands SDK
+
+# Strands Agents SDK (Official packages)
+strands-agents>=0.1.0
+strands-agents-tools>=0.1.0
+
+# AWS SDK for Bedrock (if using Bedrock model)
+boto3>=1.34.0
+botocore>=1.34.0
+
+# CLI framework
+click>=8.1.7
+typer>=0.9.0
+
+# Data processing and utilities
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+beautifulsoup4>=4.12.2
+
+# Status tracking and persistence
+sqlite3-utils>=3.34
+pandas>=2.1.0
+
+# Enhanced web scraping (optional)
+lxml>=4.9.3
+
+# Development and testing
+pytest>=7.4.0

@@ -1,0 +1,35 @@
+[
+  {
+    "name": "GitHub Copilot",
+    "website_url": "https://github.com/features/copilot",
+    "github_url": "https://github.com/github/copilot-docs",
+    "docs_url": "https://docs.github.com/en/copilot",
+    "company_name": "GitHub"
+  },
+  {
+    "name": "Cursor",
+    "website_url": "https://cursor.sh",
+    "github_url": "https://github.com/getcursor/cursor",
+    "company_name": "Anysphere"
+  },
+  {
+    "name": "Replit",
+    "website_url": "https://replit.com",
+    "github_url": "https://github.com/replit",
+    "docs_url": "https://docs.replit.com",
+    "company_name": "Replit"
+  },
+  {
+    "name": "Claude Code",
+    "website_url": "https://claude.ai/code",
+    "docs_url": "https://docs.anthropic.com/en/docs/claude-code",
+    "company_name": "Anthropic"
+  },
+  {
+    "name": "Codeium",
+    "website_url": "https://codeium.com",
+    "github_url": "https://github.com/Exafunction/codeium",
+    "docs_url": "https://codeium.com/docs",
+    "company_name": "Exafunction"
+  }
+]
